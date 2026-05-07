@@ -1,0 +1,63 @@
+بسم الله الرحمن الرحيم
+الحمد لله رب العالمين
+وأفضل الصلاة وأتم التسليم على سيدنا محمد وعلى آله وصحبه أجمعين
+
+# Things I want my would-be personal website to have, insha'Allah
+
+## Home page
+Not entirely decided yet. By default, it could be the blog view, showing: picked blogs, recent blogs, then the full list of all blogs.
+
+## Navbar
+- CV
+- Blog
+- GitHub
+- LinkedIn
+- RSS feed (I don't yet know what it is or how it works, lol)
+- Featured — pages I want to feature. The view would be a single centered column containing a card for each project page. Each card would show a brief description, an external link if applicable, and a link to the page on my website.
+
+## Page concept
+Everything on the website is conceptually a "page." A page can be:
+- A blog post
+- An app (with backend and frontend, or frontend only, that serves something)
+- The CV
+
+Blog pages would follow a standardized design. App pages and the CV page would be arbitrary code.
+
+## Tech stack
+- Backend: Rust
+- Frontend: Svelte
+
+## Page editor features
+For any page I create in the website editor:
+- Arbitrary JS code in a block — for example, to demo an idea inline. (Maybe call it an "executed code block" rather than just "code block"? Sounds a bit mouthy though.)
+- Several themes, each with a dark and a light variant.
+- Extremely minimal looking but rich. Examples:
+  - The top navbar is hidden by default and appears on hover.
+  - A hidden sections navigator on the left, also revealed on hover.
+  - Each published page has a TL;DR button that is hidden by default and appears on hover.
+  - Plenty of negative space.
+  - Best UI/UX practices.
+  - Optimized for reading, calm, relaxation, eye comfort, no clutter, no distractors, and a single focus point for the user.
+
+## Page structure
+Each page necessarily starts with: basmalah, hamd, salawat. Each page ends with: salawat, hamd.
+
+## Languages and direction
+Blogs should support Arabic, Turkish, and English by default. A title, paragraph, or other element may use any mix of these. The website should support both RTL and LTR. Insha'Allah!
+
+## Blog post elements
+When creating a blog post, I would like to choose between different elements:
+- Markdown — with all the usual goodies: headers, code blocks, images, playable audio files, links with or without preview, playable video, etc.
+- Arbitrary executed code block
+- Ayah
+- Hadith
+
+## SEO and discoverability
+- sitemap
+- robots.txt
+- ai.txt
+- llm.txt
+- etc.
+
+وصلى الله على سيدنا محمد وعلى آله وصحبه أجمعين
+والحمد لله رب العالمين

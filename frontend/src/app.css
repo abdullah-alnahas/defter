@@ -1,0 +1,21 @@
+:root {
+  --bg: #fbfaf7;
+  --fg: #1a1a1a;
+  --muted: #6b6b6b;
+  --rule: #e6e3dc;
+  --measure: 38rem;
+  --serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, 'Times New Roman', serif;
+  --arabic: 'Amiri', 'Scheherazade New', 'Noto Naskh Arabic', serif;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--serif);
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+*:lang(ar) { font-family: var(--arabic); }
