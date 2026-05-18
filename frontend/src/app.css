@@ -1,3 +1,10 @@
+@font-face {
+  font-family: 'UthmanTN';
+  src: url('/fonts/UthmanTN-Arabic.woff2') format('woff2');
+  font-display: swap;
+  unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF;
+}
+
 :root {
   --bg: #fbfaf7;
   --fg: #1a1a1a;
@@ -6,6 +13,7 @@
   --measure: 38rem;
   --serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, 'Times New Roman', serif;
   --arabic: 'Amiri', 'Scheherazade New', 'Noto Naskh Arabic', serif;
+  --quran: 'UthmanTN', 'Amiri Quran', 'Scheherazade New', serif;
 }
 
 html, body {

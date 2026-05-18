@@ -19,8 +19,8 @@
     </section>
 
     <footer class="closing" lang="ar" dir="rtl">
-      <p>وصلى الله على سيدنا محمد وعلى آله وصحبه أجمعين</p>
-      <p>والحمد لله رب العالمين</p>
+      <p class="ayah">﴿سُبْحَانَ رَبِّكَ رَبِّ الْعِزَّةِ عَمَّا يَصِفُونَ * وَسَلَامٌ عَلَى الْمُرْسَلِينَ * وَالْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ﴾</p>
+      <p class="salawat">اللّهُمَّ صَلِّ على سيِّدِنا مُحمَّدٍ وعلى آلِ سيِّدِنا مُحمَّدٍ، كَما صَلَّيْتَ على سيِّدِنا إبراهيمَ وعلى آلِ سيِّدِنا إبراهيمَ، إنَّكَ حَميدٌ مَجيدٌ. اللّهُمَّ بارِكْ على سيِّدِنا مُحمَّدٍ وعلى آلِ سيِّدِنا مُحمَّدٍ، كَما بارَكْتَ على سيِّدِنا إبراهيمَ وعلى آلِ سيِّدِنا إبراهيمَ، إنَّكَ حَميدٌ مَجيدٌ.</p>
     </footer>
   </article>
 </main>
@@ -51,6 +51,21 @@
     padding-top: 2rem;
     border-top: 1px solid var(--rule);
     margin-top: 3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .closing .ayah {
+    font-family: var(--quran);
+    font-size: 1.5rem;
+    line-height: 2.2;
+    color: var(--fg);
+  }
+
+  .closing .salawat {
+    font-size: 1rem;
+    line-height: 2;
   }
 
   h1 {

@@ -51,6 +51,9 @@ Each page necessarily ends with:
 
    اللّهُمَّ صَلِّ على سيِّدِنا مُحمَّدٍ وعلى آلِ سيِّدِنا مُحمَّدٍ، كَما صَلَّيْتَ على سيِّدِنا إبراهيمَ وعلى آلِ سيِّدِنا إبراهيمَ، إنَّكَ حَميدٌ مَجيدٌ. اللّهُمَّ بارِكْ على سيِّدِنا مُحمَّدٍ وعلى آلِ سيِّدِنا مُحمَّدٍ، كَما بارَكْتَ على سيِّدِنا إبراهيمَ وعلى آلِ سيِّدِنا إبراهيمَ، إنَّكَ حَميدٌ مَجيدٌ.
 
+## Footnotes
+Interactive footnotes displayed as contextual sidenotes in the page margins. Sidenotes are hidden by default, appear on hover with a fade transition, disappear on hover out, and can be pinned/unpinned with a click. All footnotes are also rendered as traditional endnotes after the article. On mobile, sidenotes adapt into tap-triggered inline expansions.
+
 ## Languages and direction
 Blogs should support Arabic, Turkish, and English by default. A title, paragraph, or other element may use any mix of these. The website should support both RTL and LTR. Insha'Allah!
 
