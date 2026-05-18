@@ -22,6 +22,8 @@ pub struct Frontmatter {
     pub lang: String,
     pub dir: String,
     pub date: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tldr: Option<String>,
 }
 
 #[derive(Debug, Serialize, Clone)]

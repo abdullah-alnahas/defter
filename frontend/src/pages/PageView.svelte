@@ -42,7 +42,7 @@
     <p class="muted">Loading…</p>
   </Page>
 {:else}
-  <Page title={page.title} dir={page.dir} lang={page.lang}>
+  <Page title={page.title} dir={page.dir} lang={page.lang} tldr={page.tldr ?? null}>
     {@html page.body}
   </Page>
 {/if}

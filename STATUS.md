@@ -6,7 +6,7 @@
 
 - **Backend:** Rust + `actix-web` 4, `actix-files` 0.6, `serde`, `toml` 0.8, `pulldown-cmark` 0.12 (server-side Markdown → HTML; tables + strikethrough + smart-punct + footnotes enabled). Release: LTO + `strip`.
 - **Frontend:** Svelte 5 (runes), Vite 6, Bun lockfile. Zero client runtime deps (`marked` + `marked-footnote` are devDeps only — used by prerender script).
-- **Content:** filesystem `content/*.md`, TOML frontmatter (`title`, `lang`, `dir`, `date`). Slug = filename stem.
+- **Content:** filesystem `content/*.md`, TOML frontmatter (`title`, `lang`, `dir`, `date`, optional `tldr`). Slug = filename stem.
 - **Runtime:** backend reads filesystem per request (no cache). Binds `127.0.0.1:8787`. Serves `frontend/dist/` (prerendered HTML per route, hashed JS/CSS assets, `sitemap.xml`, `robots.txt`). `/p/{slug}` resolves to `dist/p/{slug}/index.html`; missing slug falls back to SPA shell.
 
 ## Layout
@@ -72,7 +72,7 @@ content/*.md                      sample pages (al-bidaya AR/RTL, on-reading-slo
 - [ ] Replace placeholder GitHub / LinkedIn URLs with real handles.
 - [ ] Featured view — single centered column of project cards (description, external link, internal link).
 - [ ] Hidden left section navigator (reveal on hover) for in-page TOC.
-- [ ] TL;DR button per published page (hidden, reveal on hover).
+- [x] TL;DR button per published page (hidden, reveal on hover) — optional `tldr` frontmatter field (parsed by Rust `Frontmatter` as `Option<String>`, by prerender as `meta.tldr || undefined`). `Page.svelte` renders a small TL;DR button next to the h1, opacity 0.35 by default → 1 on `.title-row:hover` / button hover / focus / `aria-expanded=true`. Click toggles an `<aside class="tldr-card">` above the body. Button absent entirely when frontmatter omits `tldr`. `aria-expanded` + `aria-controls` for screen readers.
 
 ### Theming
 - [x] **Dark variant infra** — `[data-theme="light"]` / `[data-theme="dark"]` selectors in `app.css`. Single theme for now, dark+light variants both shipped. Tokens (`--bg`, `--fg`, `--muted`, `--rule`) swap; static tokens (`--measure`, `--serif`, `--arabic`, `--quran`) stay on `:root`. Dark variant sets `color-scheme: dark` for native widgets.

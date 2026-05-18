@@ -51,10 +51,13 @@ title = "..."
 lang = "en"     # or ar, tr
 dir  = "ltr"    # or rtl
 date = "2026-05-07"
+tldr = "..."    # optional; renders a hover-revealed TL;DR button next to the title
 +++
 
 Markdown body here.
 ```
+
+Footnotes use standard Markdown syntax: `[^label]` inline ref, `[^label]: ...` definition anywhere in the body. Rendered as superscript refs with hover-revealed margin sidenotes (desktop) or tap-to-expand inline cards (mobile); endnote list always appears at the end of the body.
 
 Filename (without `.md`) is the slug. No restart needed — backend reads filesystem on every request.
 

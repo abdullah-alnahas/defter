@@ -1,5 +1,6 @@
 <script>
-  let { title, dir = 'ltr', lang = 'en', children } = $props();
+  let { title, dir = 'ltr', lang = 'en', tldr = null, children } = $props();
+  let open = $state(false);
 </script>
 
 <main id="main-content">
@@ -11,7 +12,21 @@
     </header>
 
     {#if title}
-      <h1>{title}</h1>
+      <div class="title-row">
+        <h1>{title}</h1>
+        {#if tldr}
+          <button
+            type="button"
+            class="tldr-btn"
+            aria-expanded={open}
+            aria-controls="tldr-card"
+            onclick={() => (open = !open)}
+          >TL;DR</button>
+        {/if}
+      </div>
+      {#if tldr && open}
+        <aside id="tldr-card" class="tldr-card" lang="en" dir="ltr">{tldr}</aside>
+      {/if}
     {/if}
 
     <section class="body">
@@ -71,7 +86,61 @@
   h1 {
     font-size: 1.6rem;
     font-weight: 500;
+    margin: 0;
+  }
+
+  .title-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
     margin: 0 0 2rem;
+  }
+
+  .tldr-btn {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--muted);
+    font: inherit;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    padding: 0.2rem 0.55rem;
+    cursor: pointer;
+    border-radius: 3px;
+    opacity: 0.35;
+    transition: opacity 180ms ease, color 180ms ease, border-color 180ms ease;
+    flex: 0 0 auto;
+  }
+  .title-row:hover .tldr-btn,
+  .tldr-btn:hover,
+  .tldr-btn:focus-visible {
+    opacity: 1;
+    color: var(--fg);
+    border-color: var(--rule);
+  }
+  .tldr-btn:focus-visible {
+    outline: 2px solid var(--fg);
+    outline-offset: 2px;
+    border-color: transparent;
+  }
+  .tldr-btn[aria-expanded='true'] {
+    opacity: 1;
+    color: var(--fg);
+    border-color: var(--rule);
+  }
+
+  .tldr-card {
+    margin: 0 0 2rem;
+    padding: 0.9rem 1.1rem;
+    background: var(--rule);
+    border-radius: 4px;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--fg);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tldr-btn { transition: none; }
   }
 
   .body :global(p) { margin: 0 0 1.2rem; }

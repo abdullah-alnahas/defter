@@ -74,6 +74,7 @@ async function loadContent() {
       lang: meta.lang,
       dir: meta.dir,
       date: meta.date,
+      tldr: meta.tldr || undefined,
       bodyMarkdown: body,
       body: injectSidenotes(marked.parse(body)),
     });
