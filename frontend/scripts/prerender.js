@@ -58,6 +58,16 @@ function extractDescription(body, fallback = '') {
   return para.replace(/\s+/g, ' ').slice(0, 160).trim();
 }
 
+function preprocessDirectives(md) {
+  return md.replace(
+    /:::(ayah|hadith)(?:\s+ref="([^"]+)")?\r?\n([\s\S]*?)\r?\n:::/g,
+    (_, kind, ref, content) => {
+      const refHtml = ref ? `\n<figcaption>${escapeHtml(ref)}</figcaption>` : '';
+      return `<figure class="${kind}" lang="ar" dir="rtl">\n<blockquote>${content.trim()}</blockquote>${refHtml}\n</figure>`;
+    }
+  );
+}
+
 function injectSidenotes(html) {
   const sectionMatch = html.match(/<section class="footnotes" data-footnotes>([\s\S]*?)<\/section>/);
   if (!sectionMatch) return html;
@@ -85,7 +95,7 @@ async function loadContent() {
     const slug = f.replace(/\.md$/, '');
     const raw = await readFile(path.join(contentDir, f), 'utf8');
     const { meta, body } = parseFrontmatter(raw);
-    const parsedHtml = injectSidenotes(marked.parse(body));
+    const parsedHtml = injectSidenotes(marked.parse(preprocessDirectives(body)));
     pages.push({
       slug,
       title: meta.title,

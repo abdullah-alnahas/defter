@@ -28,7 +28,7 @@ frontend/src/lib/router.svelte.js ~15 line history-API router + setPath() for SS
 frontend/src/lib/Link.svelte      client-side <a>, intercepts plain clicks
 frontend/src/pages/IndexPage.svelte  list pages (initial prop → SSR; falls back to fetch)
 frontend/src/pages/PageView.svelte   one page (initial prop → SSR; body is server-rendered HTML, no marked on client)
-content/*.md                      sample pages (al-bidaya AR/RTL, on-reading-slowly EN/LTR, footnotes-demo EN/LTR, long-form-demo EN/LTR with h2/h3 sections)
+content/*.md                      sample pages (al-bidaya AR/RTL, on-reading-slowly EN/LTR, footnotes-demo EN/LTR, long-form-demo EN/LTR with sections, ayat-demo EN/LTR with ayah+hadith directives)
 ```
 
 ## API
@@ -85,8 +85,9 @@ content/*.md                      sample pages (al-bidaya AR/RTL, on-reading-slo
 - [x] Lighthouse 100 (mobile + desktop) preserved after theme infra change.
 
 ### Content elements
-- [ ] Ayah element (custom block in markdown — syntax TBD, e.g. `:::ayah`).
-- [ ] Hadith element (custom block — syntax TBD).
+- [x] Ayah element (`:::ayah ref="..."` directive) — prerender's `preprocessDirectives()` rewrites the fenced directive into `<figure class="ayah" lang="ar" dir="rtl"><blockquote>...</blockquote><figcaption>ref</figcaption></figure>` before marked sees it. CSS renders in UthmanTN (Quran font), centered, with horizontal rules above/below.
+- [x] Hadith element (`:::hadith ref="..."` directive) — same pipeline as Ayah; figure carries `.hadith` class; CSS renders in the regular Arabic stack (Amiri) at a slightly smaller size, since hadith collections traditionally don't use Quran mushaf typography.
+- [x] Sample page `content/ayat-demo.md` with both elements + `tldr`.
 - [ ] Executed JS code block (sandboxed inline demo).
 - [ ] Markdown extras audit: images, audio, video, link previews.
 - [ ] Mixed-language inline support within single element.

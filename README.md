@@ -62,6 +62,20 @@ Markdown body here.
 
 Footnotes use standard Markdown syntax: `[^label]` inline ref, `[^label]: ...` definition anywhere in the body. Rendered as superscript refs with hover-revealed margin sidenotes (desktop) or tap-to-expand inline cards (mobile); endnote list always appears at the end of the body.
 
+### Ayah / Hadith blocks
+
+```
+:::ayah ref="Al-Baqarah 2:255"
+اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ
+:::
+
+:::hadith ref="صحيح البخاري"
+إنَّما الأعمالُ بالنِّيَّاتِ
+:::
+```
+
+Both render as bordered figures with `lang="ar" dir="rtl"`. Ayah uses the Quran font; Hadith uses the regular Arabic stack.
+
 Filename (without `.md`) is the slug. No restart needed — backend reads filesystem on every request.
 
 ## Run
