@@ -62,6 +62,19 @@ Markdown body here.
 
 Footnotes use standard Markdown syntax: `[^label]` inline ref, `[^label]: ...` definition anywhere in the body. Rendered as superscript refs with hover-revealed margin sidenotes (desktop) or tap-to-expand inline cards (mobile); endnote list always appears at the end of the body.
 
+### Executable JS code blocks
+
+Fenced code with the `exec` info-string renders as a sandboxed iframe:
+
+````
+```exec
+print('hello');
+print(2 + 2);
+```
+````
+
+The iframe sandbox is `allow-scripts` only. The runtime exposes `print(...)`; thrown errors render in red.
+
 ### Ayah / Hadith blocks
 
 ```

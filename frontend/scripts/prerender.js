@@ -9,6 +9,45 @@ import { gfmHeadingId } from 'marked-gfm-heading-id';
 marked.use(gfmHeadingId());
 marked.use(markedFootnote());
 
+marked.use({
+  renderer: {
+    code(token) {
+      const lang = token.lang || '';
+      const code = token.text || '';
+      if (lang === 'exec') {
+        const escapedSrcdoc = escapeHtml(execIframeSrcdoc(code));
+        return `<figure class="exec"><iframe sandbox="allow-scripts" loading="lazy" referrerpolicy="no-referrer" srcdoc="${escapedSrcdoc}" title="Executable code block"></iframe><figcaption>Live code (sandboxed)</figcaption></figure>\n`;
+      }
+      return false; // fall back to marked's default code renderer
+    },
+  },
+});
+
+function execIframeSrcdoc(userJs) {
+  return `<!doctype html><html><head><meta charset="utf-8"><style>
+    body { margin: 0; padding: 0.6rem 0.8rem; font: 14px ui-sans-serif,system-ui,sans-serif; color: #222; background: #fff; }
+    #out { white-space: pre-wrap; font: 13px ui-monospace,monospace; }
+    .err { color: #c00; }
+    @media (prefers-color-scheme: dark) {
+      body { color: #eee; background: #1a1a1a; }
+      .err { color: #ff7a7a; }
+    }
+  </style></head><body><div id="out"></div><script>
+    (function(){
+      var out = document.getElementById('out');
+      function show(v, cls){
+        var d = document.createElement('div');
+        if (cls) d.className = cls;
+        d.textContent = typeof v === 'object' ? JSON.stringify(v, null, 2) : String(v);
+        out.appendChild(d);
+      }
+      window.print = function(){ for (var i=0; i<arguments.length; i++) show(arguments[i]); };
+      try { ${userJs} }
+      catch(e){ show(e && e.message || e, 'err'); }
+    })();
+  </${'script'}></body></html>`;
+}
+
 function extractHeadings(html) {
   const out = [];
   const re = /<h([23])\s+id="([^"]+)"[^>]*>([\s\S]*?)<\/h\1>/g;

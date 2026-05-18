@@ -88,7 +88,7 @@ content/*.md                      sample pages (al-bidaya AR/RTL, on-reading-slo
 - [x] Ayah element (`:::ayah ref="..."` directive) — prerender's `preprocessDirectives()` rewrites the fenced directive into `<figure class="ayah" lang="ar" dir="rtl"><blockquote>...</blockquote><figcaption>ref</figcaption></figure>` before marked sees it. CSS renders in UthmanTN (Quran font), centered, with horizontal rules above/below.
 - [x] Hadith element (`:::hadith ref="..."` directive) — same pipeline as Ayah; figure carries `.hadith` class; CSS renders in the regular Arabic stack (Amiri) at a slightly smaller size, since hadith collections traditionally don't use Quran mushaf typography.
 - [x] Sample page `content/ayat-demo.md` with both elements + `tldr`.
-- [ ] Executed JS code block (sandboxed inline demo).
+- [x] Executable JS code block — fenced code with `exec` info-string (` ```exec `) is replaced (by a marked renderer override) with `<figure class="exec"><iframe sandbox="allow-scripts" srcdoc="..."></iframe><figcaption>Live code (sandboxed)</figcaption></figure>`. Iframe srcdoc carries a tiny runtime that exposes `print(...)` and a try/catch that pipes errors into the output area in red. Sandbox is `allow-scripts` only — no same-origin, no top-navigation, no forms — so user code can't reach the parent page or the network. Sample page `content/exec-demo.md`.
 - [ ] Markdown extras audit: images, audio, video, link previews.
 - [ ] Mixed-language inline support within single element.
 
