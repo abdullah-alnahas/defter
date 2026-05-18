@@ -4,6 +4,7 @@ lang = "en"
 dir = "ltr"
 date = "2026-05-17"
 tldr = "A multi-section page used to exercise the hidden left section navigator and the section-anchor behavior."
+featured = true
 +++
 
 This page exists to exercise the hidden left section navigator. Hover the small strip on the left edge to reveal a list of every `<h2>` and `<h3>` on the page; clicking jumps to that section.

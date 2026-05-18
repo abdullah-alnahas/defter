@@ -38,8 +38,10 @@ function parseFrontmatter(raw) {
   if (!m) throw new Error('Missing TOML frontmatter');
   const meta = {};
   for (const line of m[1].split(/\r?\n/)) {
-    const kv = line.match(/^\s*(\w+)\s*=\s*"(.*)"\s*$/);
-    if (kv) meta[kv[1]] = kv[2];
+    const str = line.match(/^\s*(\w+)\s*=\s*"(.*)"\s*$/);
+    if (str) { meta[str[1]] = str[2]; continue; }
+    const bool = line.match(/^\s*(\w+)\s*=\s*(true|false)\s*$/);
+    if (bool) { meta[bool[1]] = bool[2] === 'true'; continue; }
   }
   return { meta, body: m[2] };
 }
@@ -91,6 +93,8 @@ async function loadContent() {
       dir: meta.dir,
       date: meta.date,
       tldr: meta.tldr || undefined,
+      featured: meta.featured === true,
+      external: meta.external || undefined,
       bodyMarkdown: body,
       body: parsedHtml,
       headings: extractHeadings(parsedHtml),
@@ -152,6 +156,25 @@ async function main() {
   );
   console.log('rendered /');
 
+  // ----- Featured route -----
+  router.setPath('/featured');
+  const featuredData = { pages: pages.map(stripBody) };
+  const { body: featuredBody } = render(App, { props: { data: featuredData } });
+  await mkdir(path.join(distDir, 'featured'), { recursive: true });
+  await writeFile(
+    path.join(distDir, 'featured', 'index.html'),
+    fill(template, {
+      lang: 'en',
+      dir: 'ltr',
+      title: 'Featured — defter',
+      description: 'Featured pages: projects, demos, and writing worth surfacing.',
+      canonical: SITE_ORIGIN + '/featured',
+      data: featuredData,
+      body: featuredBody,
+    })
+  );
+  console.log('rendered /featured');
+
   // ----- Per-page routes -----
   for (const p of pages) {
     const route = `/p/${p.slug}`;
@@ -181,6 +204,7 @@ async function main() {
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>${SITE_ORIGIN}/</loc><lastmod>${today}</lastmod></url>
+  <url><loc>${SITE_ORIGIN}/featured</loc><lastmod>${today}</lastmod></url>
 ${pages.map((p) => `  <url><loc>${SITE_ORIGIN}/p/${p.slug}</loc><lastmod>${p.date}</lastmod></url>`).join('\n')}
 </urlset>
 `;
@@ -247,6 +271,10 @@ Allow: /
 ## Posts
 
 ${llmIndex}
+
+## Other views
+
+- [Featured](${SITE_ORIGIN}/featured) — curated subset of posts and projects.
 
 ## Feeds
 

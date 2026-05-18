@@ -6,7 +6,7 @@
 
 - **Backend:** Rust + `actix-web` 4, `actix-files` 0.6, `serde`, `toml` 0.8, `pulldown-cmark` 0.12 (server-side Markdown → HTML; tables + strikethrough + smart-punct + footnotes enabled). Release: LTO + `strip`.
 - **Frontend:** Svelte 5 (runes), Vite 6, Bun lockfile. Zero client runtime deps (`marked`, `marked-footnote`, `marked-gfm-heading-id` are devDeps only — used by prerender script).
-- **Content:** filesystem `content/*.md`, TOML frontmatter (`title`, `lang`, `dir`, `date`, optional `tldr`). Slug = filename stem.
+- **Content:** filesystem `content/*.md`, TOML frontmatter (`title`, `lang`, `dir`, `date`, optional `tldr`, optional `featured`, optional `external`). Slug = filename stem.
 - **Runtime:** backend reads filesystem per request (no cache). Binds `127.0.0.1:8787`. Serves `frontend/dist/` (prerendered HTML per route, hashed JS/CSS assets, `sitemap.xml`, `robots.txt`). `/p/{slug}` resolves to `dist/p/{slug}/index.html`; missing slug falls back to SPA shell.
 
 ## Layout
@@ -71,7 +71,7 @@ content/*.md                      sample pages (al-bidaya AR/RTL, on-reading-slo
 ### Navigation
 - [x] Hidden top navbar — `lib/Nav.svelte`. Top 2.5rem hover-zone. Nav fades + slides in on `:hover` / `:focus-within`. Links: Blog (`/`), Featured (`/featured` — 404 pending), CV (`/p/cv` — 404 pending), GitHub (external, placeholder URL — replace with real handle), LinkedIn (external, placeholder URL), RSS (`/rss.xml`). Skip-link (`Skip to content` → `#main-content`) visible on focus. RTL-aware via logical properties. `pointer-events: none` when hidden so it can't intercept clicks. Keyboard a11y: focus-visible reveals, Tab walks links.
 - [ ] Replace placeholder GitHub / LinkedIn URLs with real handles.
-- [ ] Featured view — single centered column of project cards (description, external link, internal link).
+- [x] Featured view — `/featured` route (prerendered to `dist/featured/index.html`, also reachable via SPA fallback). `FeaturedPage.svelte` lists pages with frontmatter `featured = true` as a single centered column of cards; each card shows the title (links to `/p/{slug}`), the `tldr` as description (when present), an internal "Read" link, and an external "↗" link (when `external = "..."` set). Sitemap + llm.txt updated to include `/featured`. Backend `Frontmatter` gains `featured: bool` (default false, skip_serializing_if false) and `external: Option<String>`. Prerender parser now also handles `key = true|false` lines.
 - [x] Hidden left section navigator — `lib/SectionNav.svelte`. Fixed left 1.5rem hover-zone; nav slides in (translateX) + fades on `:hover` / `:focus-within`. Lists every h2/h3 from the rendered body (extracted by prerender via `extractHeadings()` after marked applies `marked-gfm-heading-id`). Threshold ≥ 2 headings; short pages render nothing. RTL-aware. Hidden on viewports < 60rem (defer mobile affordance). PageView falls back to client-side `deriveHeadings()` from the body HTML when arriving via `/api/pages/{slug}` (which doesn't include `headings`).
 - [x] TL;DR button per published page (hidden, reveal on hover) — optional `tldr` frontmatter field (parsed by Rust `Frontmatter` as `Option<String>`, by prerender as `meta.tldr || undefined`). `Page.svelte` renders a small TL;DR button next to the h1, opacity 0.35 by default → 1 on `.title-row:hover` / button hover / focus / `aria-expanded=true`. Click toggles an `<aside class="tldr-card">` above the body. Button absent entirely when frontmatter omits `tldr`. `aria-expanded` + `aria-controls` for screen readers.
 

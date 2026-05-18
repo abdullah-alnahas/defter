@@ -4,6 +4,8 @@ lang = "en"
 dir = "ltr"
 date = "2026-05-18"
 tldr = "Footnotes render as superscript refs with a margin sidenote on hover (wide screens) or tap-to-expand inline (narrow). The endnote list is always present for readers and assistive tech."
+featured = true
+external = "https://github.github.com/gfm/#footnotes"
 +++
 
 This page demonstrates inline footnote references[^slow] and the endnote list that follows the article body.

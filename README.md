@@ -53,6 +53,8 @@ lang = "en"     # or ar, tr
 dir  = "ltr"    # or rtl
 date = "2026-05-07"
 tldr = "..."    # optional; renders a hover-revealed TL;DR button next to the title
+featured = true # optional; appears on /featured as a card
+external = "https://..." # optional; external link rendered on the featured card
 +++
 
 Markdown body here.

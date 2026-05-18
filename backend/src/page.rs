@@ -24,7 +24,13 @@ pub struct Frontmatter {
     pub date: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub tldr: Option<String>,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub featured: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub external: Option<String>,
 }
+
+fn is_false(b: &bool) -> bool { !*b }
 
 #[derive(Debug, Serialize, Clone)]
 pub struct PageMeta {
