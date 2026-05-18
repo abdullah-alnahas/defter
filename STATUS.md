@@ -4,8 +4,8 @@
 
 ## Stack
 
-- **Backend:** Rust + `actix-web` 4, `actix-files` 0.6, `serde`, `toml` 0.8, `pulldown-cmark` 0.12 (server-side Markdown → HTML). Release: LTO + `strip`.
-- **Frontend:** Svelte 5 (runes), Vite 6, Bun lockfile. Zero client runtime deps (`marked` is devDep only — used by prerender script).
+- **Backend:** Rust + `actix-web` 4, `actix-files` 0.6, `serde`, `toml` 0.8, `pulldown-cmark` 0.12 (server-side Markdown → HTML; tables + strikethrough + smart-punct + footnotes enabled). Release: LTO + `strip`.
+- **Frontend:** Svelte 5 (runes), Vite 6, Bun lockfile. Zero client runtime deps (`marked` + `marked-footnote` are devDeps only — used by prerender script).
 - **Content:** filesystem `content/*.md`, TOML frontmatter (`title`, `lang`, `dir`, `date`). Slug = filename stem.
 - **Runtime:** backend reads filesystem per request (no cache). Binds `127.0.0.1:8787`. Serves `frontend/dist/` (prerendered HTML per route, hashed JS/CSS assets, `sitemap.xml`, `robots.txt`). `/p/{slug}` resolves to `dist/p/{slug}/index.html`; missing slug falls back to SPA shell.
 
@@ -27,7 +27,7 @@ frontend/src/lib/router.svelte.js ~15 line history-API router + setPath() for SS
 frontend/src/lib/Link.svelte      client-side <a>, intercepts plain clicks
 frontend/src/pages/IndexPage.svelte  list pages (initial prop → SSR; falls back to fetch)
 frontend/src/pages/PageView.svelte   one page (initial prop → SSR; body is server-rendered HTML, no marked on client)
-content/*.md                      sample pages (al-bidaya AR/RTL, on-reading-slowly EN/LTR)
+content/*.md                      sample pages (al-bidaya AR/RTL, on-reading-slowly EN/LTR, footnotes-demo EN/LTR)
 ```
 
 ## API
@@ -91,10 +91,12 @@ content/*.md                      sample pages (al-bidaya AR/RTL, on-reading-slo
 - [ ] Mixed-language inline support within single element.
 
 ### Footnotes / sidenotes
-- [ ] Markdown footnote syntax (`[^1]` / `[^1]: ...`) parsed by `pulldown-cmark` (enable `FOOTNOTES` option).
-- [ ] Render footnotes as margin sidenotes (desktop): hidden by default, fade-in on hover over ref, fade-out on hover out.
+- [x] Markdown footnote syntax (`[^1]` / `[^1]: ...`) — backend `pulldown-cmark` `ENABLE_FOOTNOTES` flag; prerender (marked) uses `marked-footnote` extension (devDep). Both produce footnote refs + definitions.
+- [x] Endnote section after article body — GFM `<section class="footnotes" data-footnotes><ol>…</ol></section>` from marked. CSS styles it muted, indented, with `:target` highlight when jumped to.
+- [x] Inline footnote ref styling — `sup:has(a[data-footnote-ref])` superscript + muted link, fg on hover/focus.
+- [x] Sample page `content/footnotes-demo.md` showing inline refs + endnotes + closing-Ayah ordering preserved.
+- [ ] Sidenote margin rendering (desktop): hidden by default, fade-in on hover over ref, fade-out on hover out. (Needs HTML post-process to inject `<span class="sidenote">` next to each ref so CSS can position in margin.)
 - [ ] Click ref to pin/unpin sidenote (persistent visibility).
-- [ ] Endnote section rendered after article body (full list, traditional numbered).
 - [ ] Mobile: sidenote collapses into tap-triggered inline expansion under the ref.
 - [ ] Keyboard equivalent (focus ref → reveal sidenote; Enter to pin).
 - [ ] RTL layout: sidenotes mirror to left margin when `dir="rtl"`.

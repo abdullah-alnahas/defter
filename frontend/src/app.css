@@ -41,3 +41,36 @@ html, body {
 }
 
 *:lang(ar) { font-family: var(--arabic); }
+
+/* footnote refs (inline) — GFM markup: <sup><a data-footnote-ref>...</a></sup> */
+sup:has(a[data-footnote-ref]) {
+  font-size: 0.72em;
+  line-height: 0;
+  vertical-align: super;
+}
+a[data-footnote-ref] {
+  text-decoration: none;
+  color: var(--muted);
+  padding: 0 0.15em;
+}
+a[data-footnote-ref]:hover,
+a[data-footnote-ref]:focus-visible {
+  color: var(--fg);
+  text-decoration: underline;
+}
+
+/* endnote list */
+.footnotes {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--rule);
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+.footnotes ol { padding-inline-start: 1.5rem; }
+.footnotes li { margin: 0 0 0.75rem; line-height: 1.6; }
+.footnotes li p { margin: 0; display: inline; }
+.footnotes a[href^='#'] { color: var(--muted); }
+.footnotes a[href^='#']:hover,
+.footnotes a[href^='#']:focus-visible { color: var(--fg); }
+.footnotes :target { background: var(--rule); }

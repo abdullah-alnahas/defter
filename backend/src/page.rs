@@ -9,6 +9,7 @@ fn render_markdown(src: &str) -> String {
     opts.insert(Options::ENABLE_TABLES);
     opts.insert(Options::ENABLE_STRIKETHROUGH);
     opts.insert(Options::ENABLE_SMART_PUNCTUATION);
+    opts.insert(Options::ENABLE_FOOTNOTES);
     let parser = Parser::new_ext(src, opts);
     let mut out = String::with_capacity(src.len() + src.len() / 4);
     html::push_html(&mut out, parser);
