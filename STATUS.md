@@ -98,8 +98,8 @@ content/*.md                      sample pages (al-bidaya AR/RTL, on-reading-slo
 - [x] Sidenote margin rendering (desktop, ≥ 70rem viewport) — prerender post-processes marked output via `injectSidenotes()`: parses footnote definitions out of the GFM `<section class="footnotes">`, then wraps each inline ref with `<span class="fn-anchor">` and appends a `<span class="sidenote">` carrying the same body. CSS positions sidenotes 15.5rem past the paragraph's inline-end edge, opacity 0 by default, opacity 1 on `:hover` / `:focus-within` of the anchor or the sidenote itself. Hover-out delay 220ms so cursor can cross gutter without dismissal. RTL-aware via logical properties (mirrors automatically).
 - [x] Keyboard equivalent — `:focus-within` reveals sidenote when the ref `<a>` gains focus.
 - [x] Mobile / narrow viewport (< 70rem) — sidenote `display: none`; endnote section remains the canonical mobile affordance.
-- [ ] Click ref to pin/unpin sidenote (persistent visibility) — JS toggle, write to localStorage per-page so reload preserves pins.
-- [ ] Mobile tap-triggered inline expansion under the ref — JS-driven (concept calls for this; currently only endnotes serve mobile).
+- [x] Click ref to pin/unpin sidenote — inline document-level delegated handler in `<head>` toggles `.fn-anchor.pinned`, prevents default jump. Pinned sidenote is always visible (overrides hover-out). `Esc` unpins all. (In-memory only; not persisted across reloads — concept did not call for persistence.)
+- [x] Mobile tap-triggered inline expansion — on narrow viewports (< 70rem) the same `.pinned` toggle renders the sidenote as a static inline block under the ref (padded, rule-tinted card). Same handler, different CSS rules per viewport.
 
 ### Page types
 - [ ] CV page (arbitrary code, single page).

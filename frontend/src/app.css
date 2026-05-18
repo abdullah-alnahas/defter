@@ -90,11 +90,31 @@ a[data-footnote-ref]:focus-visible {
   .fn-anchor .sidenote p { margin: 0; display: inline; }
   .fn-anchor:hover .sidenote,
   .fn-anchor:focus-within .sidenote,
-  .fn-anchor .sidenote:hover {
+  .fn-anchor .sidenote:hover,
+  .fn-anchor.pinned .sidenote {
     opacity: 1;
     pointer-events: auto;
     transition-delay: 0ms;
   }
+  .fn-anchor.pinned a[data-footnote-ref] { color: var(--fg); }
+}
+
+/* mobile / narrow: tap ref → toggle inline expansion under the ref */
+@media (max-width: 69.99rem) {
+  .fn-anchor.pinned .sidenote {
+    display: block;
+    margin: 0.6rem 0 1.1rem;
+    padding: 0.7rem 0.9rem;
+    background: var(--rule);
+    border-radius: 4px;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    color: var(--fg);
+  }
+  .fn-anchor.pinned .sidenote .sn-num { font-weight: 600; margin-inline-end: 0.35em; }
+  .fn-anchor.pinned .sidenote p { margin: 0; display: inline; }
+  .fn-anchor a[data-footnote-ref] { cursor: pointer; }
+  .fn-anchor.pinned a[data-footnote-ref] { color: var(--fg); }
 }
 
 @media (prefers-reduced-motion: reduce) {
