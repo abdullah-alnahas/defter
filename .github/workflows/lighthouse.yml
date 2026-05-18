@@ -1,0 +1,103 @@
+name: lighthouse
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-and-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            backend/target
+          key: cargo-${{ hashFiles('backend/Cargo.lock') }}
+
+      - name: Install frontend deps
+        working-directory: frontend
+        run: bun install --frozen-lockfile
+
+      - name: Build frontend (SSR prerender)
+        working-directory: frontend
+        run: bun run build
+
+      - name: Build backend (release)
+        working-directory: backend
+        run: cargo build --release
+
+      - name: Start backend
+        working-directory: backend
+        run: |
+          ./target/release/defter &
+          echo $! > /tmp/backend.pid
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            if curl -fsS http://127.0.0.1:8787/ > /dev/null; then echo ready; break; fi
+            sleep 0.3
+          done
+
+      - name: Install Lighthouse
+        run: npm install --no-save lighthouse@12
+
+      - name: Run Lighthouse — enforce 100 on every route × form-factor
+        run: |
+          set -e
+          mkdir -p lh-reports
+          ROUTES="/ /featured /p/al-bidaya /p/on-reading-slowly /p/footnotes-demo /p/long-form-demo /p/ayat-demo /p/exec-demo /p/cv"
+          FAIL=0
+          for route in $ROUTES; do
+            for ff in desktop mobile; do
+              SAFE=$(echo "$route$ff" | tr '/' '_')
+              OUT="lh-reports/lh${SAFE}.json"
+              FLAG=""
+              if [ "$ff" = "mobile" ]; then FLAG="--form-factor=mobile"; fi
+              npx --no-install lighthouse "http://127.0.0.1:8787$route" \
+                $FLAG \
+                --chrome-flags="--headless --no-sandbox" \
+                --output=json --output-path="$OUT" --quiet || { echo "lighthouse run failed for $route ($ff)"; FAIL=1; continue; }
+              node -e "
+                const r = require(process.argv[1]);
+                const cats = ['performance','accessibility','best-practices','seo'];
+                const bad = [];
+                for (const k of cats) {
+                  const s = Math.round((r.categories[k]?.score ?? 0) * 100);
+                  if (s < 100) bad.push(k + '=' + s);
+                }
+                if (bad.length) { console.error(process.argv[2] + ' (' + process.argv[3] + ') FAIL: ' + bad.join(', ')); process.exit(1); }
+                else { console.log(process.argv[2] + ' (' + process.argv[3] + ') PASS 100/100/100/100'); }
+              " "./$OUT" "$route" "$ff" || FAIL=1
+            done
+          done
+          if [ "$FAIL" -ne 0 ]; then
+            echo "::error::Lighthouse below 100 on at least one route × form-factor."
+            exit 1
+          fi
+
+      - name: Stop backend
+        if: always()
+        run: kill $(cat /tmp/backend.pid) || true
+
+      - name: Upload Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-reports
+          path: lh-reports/

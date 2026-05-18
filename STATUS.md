@@ -147,7 +147,7 @@ content/*.md                      sample pages (al-bidaya AR/RTL, on-reading-slo
 - [ ] WCAG AA contrast audit on every future theme variant.
 - [ ] Image policy: explicit `width`/`height`, modern format, lazy-load below fold (applies once images authored).
 - [ ] Preload critical assets (closing-Ayah font once added).
-- [ ] CI step: run Lighthouse against every prerendered route, fail build below 100.
+- [x] CI step — `.github/workflows/lighthouse.yml` on push/PR to main: installs Bun + Rust toolchain, builds the SSR prerender + backend, boots the backend, runs `npx lighthouse` against every prerendered route (`/`, `/featured`, all `/p/*`) in both desktop and mobile form-factors, and fails the build if any of the four categories drops below 100. Uploads all JSON reports as a `lighthouse-reports` artifact for inspection.
 - [ ] CSP review: replace `'unsafe-inline'` style-src with hashed/nonced styles once build pipeline emits stable hashes.
 - [ ] Set real `SITE_ORIGIN` env var for production builds (currently defaults to `http://127.0.0.1:8787`).
 
