@@ -3,6 +3,7 @@
   import { router } from './lib/router.svelte.js';
   import IndexPage from './pages/IndexPage.svelte';
   import PageView from './pages/PageView.svelte';
+  import ThemeToggle from './lib/ThemeToggle.svelte';
 
   let { data = {} } = $props();
 
@@ -16,3 +17,5 @@
 {:else}
   <IndexPage initial={data.pages} />
 {/if}
+
+<ThemeToggle />

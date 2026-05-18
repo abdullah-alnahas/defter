@@ -21,6 +21,7 @@ frontend/src/main.js              hydrate() when prerendered children present, e
 frontend/src/App.svelte           accepts data prop; router switch (path /p/{slug} → PageView, else IndexPage)
 frontend/src/app.css              theme tokens: `:root` static (--measure, --serif, --arabic, --quran), `[data-theme=light|dark]` variable (--bg, --fg, --muted, --rule); @font-face for UthmanTN
 frontend/src/lib/Page.svelte      <main> + mandatory basmalah/hamd/salawat wrapper
+frontend/src/lib/ThemeToggle.svelte  top-right hover-revealed light↔dark toggle (writes localStorage, updates dataset.theme)
 frontend/src/lib/router.svelte.js ~15 line history-API router + setPath() for SSR
 frontend/src/lib/Link.svelte      client-side <a>, intercepts plain clicks
 frontend/src/pages/IndexPage.svelte  list pages (initial prop → SSR; falls back to fetch)
@@ -75,7 +76,7 @@ content/*.md                      sample pages (al-bidaya AR/RTL, on-reading-slo
 - [x] **Dark variant infra** — `[data-theme="light"]` / `[data-theme="dark"]` selectors in `app.css`. Single theme for now, dark+light variants both shipped. Tokens (`--bg`, `--fg`, `--muted`, `--rule`) swap; static tokens (`--measure`, `--serif`, `--arabic`, `--quran`) stay on `:root`. Dark variant sets `color-scheme: dark` for native widgets.
 - [x] **System-pref auto-detect** (`prefers-color-scheme`) — inline blocking `<script>` in `<head>` (runs before paint, no FOUC) reads `localStorage['defter-theme']`; falls back to `matchMedia('(prefers-color-scheme: dark)')`. Sets `document.documentElement.dataset.theme`. `<meta name="color-scheme" content="light dark">` declared.
 - [x] **Persistence** — inline init reads `localStorage['defter-theme']` (key reserved for future toggle). Honored on every prerendered page load.
-- [ ] Theme switcher UI — minimal toggle component, cycles light/dark/auto, writes `localStorage`. (Pending — likely lives in hidden navbar.)
+- [x] Theme switcher UI — `lib/ThemeToggle.svelte`. Fixed top/inset-inline-end (RTL-aware) icon button, sun/moon SVG, opacity 0.35 → 1 on hover/focus. Two-state toggle (light ↔ dark): writes `localStorage['defter-theme']` and updates `document.documentElement.dataset.theme` synchronously. `aria-label` reflects target state. Render-gated on client mount to avoid SSR/CSR mismatch.
 - [ ] Multi-theme: more than one named theme, each with light + dark variant (concept calls for "several themes"). Add `[data-theme-name="..."]` orthogonal to `[data-theme]`.
 - [x] WCAG AA contrast verified on both variants (light `#1a1a1a/#fbfaf7` ≈ 16:1; dark `#ece8df/#14130f` ≈ 15:1; muted tokens ≥ 6:1 both).
 - [x] Lighthouse 100 (mobile + desktop) preserved after theme infra change.
