@@ -154,6 +154,67 @@ Sitemap: ${SITE_ORIGIN}/sitemap.xml
   await writeFile(path.join(distDir, 'robots.txt'), robots);
   console.log('wrote robots.txt');
 
+  // ----- rss.xml (RSS 2.0) -----
+  const toRfc822 = (ymd) => {
+    const d = new Date(`${ymd}T00:00:00Z`);
+    return d.toUTCString();
+  };
+  const rssItems = pages.map((p) => {
+    const url = `${SITE_ORIGIN}/p/${p.slug}`;
+    const desc = extractDescription(p.bodyMarkdown, p.title);
+    return `    <item>
+      <title>${escapeHtml(p.title)}</title>
+      <link>${url}</link>
+      <guid isPermaLink="true">${url}</guid>
+      <pubDate>${toRfc822(p.date)}</pubDate>
+      <description>${escapeHtml(desc)}</description>
+    </item>`;
+  }).join('\n');
+  const rss = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>defter — دفتر</title>
+    <link>${SITE_ORIGIN}/</link>
+    <description>A personal notebook. Blog posts, projects, and notes.</description>
+    <atom:link href="${SITE_ORIGIN}/rss.xml" rel="self" type="application/rss+xml" />
+    <language>en</language>
+${rssItems}
+  </channel>
+</rss>
+`;
+  await writeFile(path.join(distDir, 'rss.xml'), rss);
+  console.log('wrote rss.xml');
+
+  // ----- ai.txt (Spawning AI usage policy — allow) -----
+  const aitxt = `# ai.txt — AI training and usage policy for ${SITE_ORIGIN}
+# Spec: https://spawning.ai/ai-txt
+
+User-Agent: *
+Allow: /
+`;
+  await writeFile(path.join(distDir, 'ai.txt'), aitxt);
+  console.log('wrote ai.txt');
+
+  // ----- llm.txt (LLM-readable site summary; concept-named llm.txt; see llmstxt.org for llms.txt) -----
+  const llmIndex = pages
+    .map((p) => `- [${p.title}](${SITE_ORIGIN}/p/${p.slug}): ${extractDescription(p.bodyMarkdown, p.title)}`)
+    .join('\n');
+  const llmtxt = `# defter — دفتر
+
+> A personal notebook. Blog posts, projects, and notes. Each page opens with basmalah/hamd/salawat and closes with the Ayah of Surat as-Saffat (verses 180-182) followed by the Ibrahimi salawat.
+
+## Posts
+
+${llmIndex}
+
+## Feeds
+
+- [RSS](${SITE_ORIGIN}/rss.xml)
+- [Sitemap](${SITE_ORIGIN}/sitemap.xml)
+`;
+  await writeFile(path.join(distDir, 'llm.txt'), llmtxt);
+  console.log('wrote llm.txt');
+
   await vite.close();
 }
 
