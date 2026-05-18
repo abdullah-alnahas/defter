@@ -6,30 +6,38 @@ Vision: see `concept.txt`.
 
 ## Stack
 
-- **Backend:** Rust + actix-web (`backend/`)
-- **Frontend:** Svelte 5 + Vite SPA (`frontend/`), built with Bun
-- Backend serves frontend `dist/` with SPA fallback to `index.html`.
+- **Backend:** Rust + actix-web (`backend/`). Markdown → HTML on the server (`pulldown-cmark`).
+- **Frontend:** Svelte 5 + Vite SPA (`frontend/`), built with Bun. SSR-prerendered to static `.html` per route.
+- Backend serves prerendered `frontend/dist/` (HTML, fonts, sitemap, robots, RSS, ai.txt, llm.txt). Unknown routes fall back to SPA shell.
 
 ## Layout
 
 ```
-backend/         actix-web server (serves SPA + /api/pages)
-  src/page.rs            frontmatter parsing + filesystem loader
+backend/         actix-web server (serves SPA + /api/pages + prerendered HTML)
+  src/page.rs            frontmatter parsing + filesystem loader + markdown→HTML
 frontend/        Vite + Svelte SPA
+  index.html             template with %LANG%/%DIR%/%TITLE%/... placeholders, inline theme-init script
+  public/fonts/          subsetted Quran font (UthmanTN, woff2)
+  scripts/prerender.js   SSR build: emits dist/*.html, sitemap.xml, robots.txt, rss.xml, ai.txt, llm.txt
   src/
     App.svelte           top-level router switch
-    lib/Page.svelte      mandatory basmalah/hamd/salawat scaffolding
+    app.css              theme tokens (`[data-theme=light|dark]`), @font-face for UthmanTN
+    lib/Page.svelte      mandatory basmalah/hamd/salawat scaffolding + closing Ayah + Ibrahimi salawat
     lib/router.svelte.js minimal history-API router
     lib/Link.svelte      client-side <a>
     pages/               IndexPage, PageView
 content/         markdown pages with TOML frontmatter (source of all blog content)
+fonts/           full unsubsetted source fonts (UthmanicHafs, UthmanTN, Besmellah)
 concept.txt      project vision (source of truth)
+STATUS.md        current iteration status, layout, conventions, done/TODO
 ```
 
 ## API
 
 - `GET /api/pages` → list of page metadata, sorted by date desc
-- `GET /api/pages/{slug}` → full page (metadata + markdown body)
+- `GET /api/pages/{slug}` → full page (metadata + **server-rendered HTML body**)
+- `GET /p/{slug}` → prerendered HTML (falls back to SPA shell if missing)
+- `GET /rss.xml`, `/sitemap.xml`, `/robots.txt`, `/ai.txt`, `/llm.txt` → static files emitted by prerender
 
 ## Authoring a page
 
@@ -63,6 +71,12 @@ make clean         # nuke dist, node_modules, target
 
 **Iter 1 (done):** Rust+Svelte skeleton, one hardcoded page, mandatory scaffolding, single light theme, RTL/LTR aware.
 
-**Iter 2 (done):** Filesystem-backed pages in `content/*.md` with TOML frontmatter. Backend exposes `/api/pages` + `/api/pages/{slug}`. Frontend has minimal client router, index list, page view with markdown rendering via `marked`. Two sample pages: one EN/LTR, one AR/RTL.
+**Iter 2 (done):** Filesystem-backed pages in `content/*.md` with TOML frontmatter. Backend exposes `/api/pages` + `/api/pages/{slug}`. Frontend has minimal client router, index list, page view with markdown rendering.
 
-**Not yet (deliberately):** navbar (hidden until hover), themes, executable code blocks, ayah/hadith elements, page editor, RSS, sitemap, CV, app pages, persistence beyond filesystem, multilingual mixing within a single element.
+**Iter 3 (done):** SSR prerender pipeline (every route emits static `.html` with full content baked in). Per-page `<title>` / meta / OG / Twitter. Sitemap + robots. Markdown → HTML moved to backend (`pulldown-cmark`). Lighthouse 100 (mobile + desktop, all four categories) on every prerendered route.
+
+**Iter 4 (done):** Closing-Ayah convention — UthmanTN Quran font subset (woff2, preloaded). `Page.svelte` closing now renders the Ayah in Quran font + full Ibrahimi salawat with سيدنا. SEO trio: RSS feed (`/rss.xml`), `ai.txt`, `llm.txt`. Dark theme variant + system-pref auto-detect (no FOUC).
+
+**Not yet:** navbar (hidden until hover), Featured view, section nav, TL;DR, theme switcher UI, multi-theme, footnote sidenotes, exec code blocks, Ayah/Hadith elements, page editor, CV, app pages, persistence beyond filesystem, multilingual mixing within a single element.
+
+See `STATUS.md` for the full per-area breakdown.
