@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="light dark" />
-    <script>(function(){try{var t=localStorage.getItem('defter-theme');if(t!=='light'&&t!=='dark')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;}catch(e){document.documentElement.dataset.theme='light';}})();</script>
+    <script>(function(){try{var t=localStorage.getItem('defter-theme');if(t!=='light'&&t!=='dark')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;var n=localStorage.getItem('defter-theme-name');if(n==='paper'||n==='sepia')document.documentElement.dataset.themeName=n;}catch(e){document.documentElement.dataset.theme='light';}})();</script>
     <script>document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('.fn-anchor a[data-footnote-ref]');if(!a)return;e.preventDefault();a.closest('.fn-anchor').classList.toggle('pinned');});document.addEventListener('keydown',function(e){if(e.key==='Escape')document.querySelectorAll('.fn-anchor.pinned').forEach(function(el){el.classList.remove('pinned');});});</script>
     <title>%TITLE%</title>
     <meta name="description" content="%DESCRIPTION%" />

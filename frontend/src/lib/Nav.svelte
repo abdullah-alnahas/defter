@@ -35,8 +35,9 @@
   .nav-zone {
     position: fixed;
     top: 0;
+    /* leave a gap for the theme bar in the top-right corner */
     inset-inline-start: 0;
-    inset-inline-end: 0;
+    inset-inline-end: 6rem;
     height: 2.5rem;
     z-index: 20;
   }

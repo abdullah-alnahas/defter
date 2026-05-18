@@ -12,21 +12,47 @@
   --quran: 'UthmanTN', 'Amiri Quran', 'Scheherazade New', serif;
 }
 
-/* light variant (default + explicit) */
+/* Theme palette × variant. Two axes:
+   - [data-theme]      light | dark
+   - [data-theme-name] paper (default) | sepia
+   Selectors default to `paper` when name attr is absent. */
+
+/* paper · light (also the un-themed default) */
 :root,
-[data-theme='light'] {
+:root[data-theme='light'],
+:root[data-theme-name='paper'],
+:root[data-theme-name='paper'][data-theme='light'] {
   --bg: #fbfaf7;
   --fg: #1a1a1a;
   --muted: #5a5a5a;
   --rule: #e6e3dc;
 }
 
-/* dark variant */
-[data-theme='dark'] {
+/* paper · dark */
+:root[data-theme='dark'],
+:root[data-theme-name='paper'][data-theme='dark'] {
   --bg: #14130f;
   --fg: #ece8df;
   --muted: #9c968a;
   --rule: #2c2a25;
+  color-scheme: dark;
+}
+
+/* sepia · light */
+:root[data-theme-name='sepia'],
+:root[data-theme-name='sepia'][data-theme='light'] {
+  --bg: #f5ecd9;
+  --fg: #2c2014;
+  --muted: #6b5640;
+  --rule: #d9caa8;
+}
+
+/* sepia · dark */
+:root[data-theme-name='sepia'][data-theme='dark'] {
+  --bg: #1f1810;
+  --fg: #ecd8b3;
+  --muted: #b09576;
+  --rule: #382b1a;
   color-scheme: dark;
 }
 
