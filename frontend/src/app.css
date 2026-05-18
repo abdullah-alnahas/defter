@@ -6,14 +6,28 @@
 }
 
 :root {
-  --bg: #fbfaf7;
-  --fg: #1a1a1a;
-  --muted: #6b6b6b;
-  --rule: #e6e3dc;
   --measure: 38rem;
   --serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, 'Times New Roman', serif;
   --arabic: 'Amiri', 'Scheherazade New', 'Noto Naskh Arabic', serif;
   --quran: 'UthmanTN', 'Amiri Quran', 'Scheherazade New', serif;
+}
+
+/* light variant (default + explicit) */
+:root,
+[data-theme='light'] {
+  --bg: #fbfaf7;
+  --fg: #1a1a1a;
+  --muted: #5a5a5a;
+  --rule: #e6e3dc;
+}
+
+/* dark variant */
+[data-theme='dark'] {
+  --bg: #14130f;
+  --fg: #ece8df;
+  --muted: #9c968a;
+  --rule: #2c2a25;
+  color-scheme: dark;
 }
 
 html, body {

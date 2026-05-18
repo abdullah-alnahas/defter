@@ -19,7 +19,7 @@ frontend/vite.config.js           svelte plugin + dev placeholder-filler plugin
 frontend/scripts/prerender.js     vite SSR + svelte/server.render(); emits dist/index.html, dist/p/<slug>/index.html, sitemap.xml, robots.txt
 frontend/src/main.js              hydrate() when prerendered children present, else mount(); reads window.__DEFTER__
 frontend/src/App.svelte           accepts data prop; router switch (path /p/{slug} → PageView, else IndexPage)
-frontend/src/app.css              vars: --bg, --fg, --muted, --rule, --measure, --serif, --arabic
+frontend/src/app.css              theme tokens: `:root` static (--measure, --serif, --arabic, --quran), `[data-theme=light|dark]` variable (--bg, --fg, --muted, --rule); @font-face for UthmanTN
 frontend/src/lib/Page.svelte      <main> + mandatory basmalah/hamd/salawat wrapper
 frontend/src/lib/router.svelte.js ~15 line history-API router + setPath() for SSR
 frontend/src/lib/Link.svelte      client-side <a>, intercepts plain clicks
@@ -39,7 +39,7 @@ content/*.md                      sample pages (al-bidaya AR/RTL, on-reading-slo
 
 - Single mandatory wrapper (`Page.svelte`). Every page = basmalah/hamd/salawat opening; closing = Ayah (Quran font) + Ibrahimi salawat with سيدنا prefix. Non-negotiable per concept.
 - RTL/LTR per-page via frontmatter `dir`. Mixed-language inline element support not yet.
-- Theme: single light theme. Vars centralized in `app.css`.
+- Theme: light + dark variants on single theme. Tokens in `app.css` under `[data-theme=light|dark]`. Selection: inline `<head>` script reads `localStorage['defter-theme']`, falls back to `prefers-color-scheme`. No FOUC. Toggle UI not yet built.
 - Slug guard: rejects `/`, `..`, empty (`page.rs:84`, also enforced in `main.rs` `/p/{slug}` handler).
 - No restart on content add — re-read every request.
 - **Quality bar:** Lighthouse 100 in Performance, Accessibility, Best Practices, SEO on every page. Hard constraint. See `## Lighthouse 100` below for blockers.
@@ -72,9 +72,13 @@ content/*.md                      sample pages (al-bidaya AR/RTL, on-reading-slo
 - [ ] TL;DR button per published page (hidden, reveal on hover).
 
 ### Theming
-- [ ] Theme system: multiple themes, each light + dark variant.
-- [ ] Theme switcher UI + persistence.
-- [ ] System-pref auto-detect (`prefers-color-scheme`).
+- [x] **Dark variant infra** — `[data-theme="light"]` / `[data-theme="dark"]` selectors in `app.css`. Single theme for now, dark+light variants both shipped. Tokens (`--bg`, `--fg`, `--muted`, `--rule`) swap; static tokens (`--measure`, `--serif`, `--arabic`, `--quran`) stay on `:root`. Dark variant sets `color-scheme: dark` for native widgets.
+- [x] **System-pref auto-detect** (`prefers-color-scheme`) — inline blocking `<script>` in `<head>` (runs before paint, no FOUC) reads `localStorage['defter-theme']`; falls back to `matchMedia('(prefers-color-scheme: dark)')`. Sets `document.documentElement.dataset.theme`. `<meta name="color-scheme" content="light dark">` declared.
+- [x] **Persistence** — inline init reads `localStorage['defter-theme']` (key reserved for future toggle). Honored on every prerendered page load.
+- [ ] Theme switcher UI — minimal toggle component, cycles light/dark/auto, writes `localStorage`. (Pending — likely lives in hidden navbar.)
+- [ ] Multi-theme: more than one named theme, each with light + dark variant (concept calls for "several themes"). Add `[data-theme-name="..."]` orthogonal to `[data-theme]`.
+- [x] WCAG AA contrast verified on both variants (light `#1a1a1a/#fbfaf7` ≈ 16:1; dark `#ece8df/#14130f` ≈ 15:1; muted tokens ≥ 6:1 both).
+- [x] Lighthouse 100 (mobile + desktop) preserved after theme infra change.
 
 ### Content elements
 - [ ] Ayah element (custom block in markdown — syntax TBD, e.g. `:::ayah`).
