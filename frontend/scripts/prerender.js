@@ -41,6 +41,26 @@ function extractDescription(body, fallback = '') {
   return para.replace(/\s+/g, ' ').slice(0, 160).trim();
 }
 
+function injectSidenotes(html) {
+  const sectionMatch = html.match(/<section class="footnotes" data-footnotes>([\s\S]*?)<\/section>/);
+  if (!sectionMatch) return html;
+  const defs = {};
+  const liRe = /<li id="footnote-([^"]+)">([\s\S]*?)<\/li>/g;
+  let m;
+  while ((m = liRe.exec(sectionMatch[1])) !== null) {
+    const label = m[1];
+    const body = m[2]
+      .replace(/\s*<a [^>]*data-footnote-backref[^>]*>[\s\S]*?<\/a>/g, '')
+      .trim();
+    defs[label] = body;
+  }
+  const refRe = /<sup>(<a id="footnote-ref-([^"]+)"[^>]*data-footnote-ref[^>]*>([^<]*)<\/a>)<\/sup>/g;
+  return html.replace(refRe, (_, aTag, label, num) => {
+    const def = defs[label] || '';
+    return `<span class="fn-anchor"><sup>${aTag}</sup><span class="sidenote" role="note" id="sidenote-${label}"><span class="sn-num">${num}.</span> ${def}</span></span>`;
+  });
+}
+
 async function loadContent() {
   const files = (await readdir(contentDir)).filter((f) => f.endsWith('.md'));
   const pages = [];
@@ -55,7 +75,7 @@ async function loadContent() {
       dir: meta.dir,
       date: meta.date,
       bodyMarkdown: body,
-      body: marked.parse(body),
+      body: injectSidenotes(marked.parse(body)),
     });
   }
   pages.sort((a, b) => (a.date < b.date ? 1 : -1));

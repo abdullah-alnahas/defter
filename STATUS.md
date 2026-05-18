@@ -16,7 +16,7 @@ backend/src/main.rs               actix server, /api/pages routes, /p/{slug} →
 backend/src/page.rs               frontmatter split + parse + markdown→HTML (pulldown-cmark) + load_one/load_all
 frontend/index.html               template with %LANG% %DIR% %TITLE% %DESCRIPTION% %CANONICAL% %DATA% <!--ssr-outlet--> placeholders
 frontend/vite.config.js           svelte plugin + dev placeholder-filler plugin
-frontend/scripts/prerender.js     vite SSR + svelte/server.render(); emits dist/index.html, dist/p/<slug>/index.html, sitemap.xml, robots.txt
+frontend/scripts/prerender.js     vite SSR + svelte/server.render(); marked + marked-footnote → HTML with `injectSidenotes()` post-process; emits dist/index.html, dist/p/<slug>/index.html, sitemap.xml, robots.txt, rss.xml, ai.txt, llm.txt
 frontend/src/main.js              hydrate() when prerendered children present, else mount(); reads window.__DEFTER__
 frontend/src/App.svelte           accepts data prop; router switch (path /p/{slug} → PageView, else IndexPage)
 frontend/src/app.css              theme tokens: `:root` static (--measure, --serif, --arabic, --quran), `[data-theme=light|dark]` variable (--bg, --fg, --muted, --rule); @font-face for UthmanTN
@@ -95,11 +95,11 @@ content/*.md                      sample pages (al-bidaya AR/RTL, on-reading-slo
 - [x] Endnote section after article body — GFM `<section class="footnotes" data-footnotes><ol>…</ol></section>` from marked. CSS styles it muted, indented, with `:target` highlight when jumped to.
 - [x] Inline footnote ref styling — `sup:has(a[data-footnote-ref])` superscript + muted link, fg on hover/focus.
 - [x] Sample page `content/footnotes-demo.md` showing inline refs + endnotes + closing-Ayah ordering preserved.
-- [ ] Sidenote margin rendering (desktop): hidden by default, fade-in on hover over ref, fade-out on hover out. (Needs HTML post-process to inject `<span class="sidenote">` next to each ref so CSS can position in margin.)
-- [ ] Click ref to pin/unpin sidenote (persistent visibility).
-- [ ] Mobile: sidenote collapses into tap-triggered inline expansion under the ref.
-- [ ] Keyboard equivalent (focus ref → reveal sidenote; Enter to pin).
-- [ ] RTL layout: sidenotes mirror to left margin when `dir="rtl"`.
+- [x] Sidenote margin rendering (desktop, ≥ 70rem viewport) — prerender post-processes marked output via `injectSidenotes()`: parses footnote definitions out of the GFM `<section class="footnotes">`, then wraps each inline ref with `<span class="fn-anchor">` and appends a `<span class="sidenote">` carrying the same body. CSS positions sidenotes 15.5rem past the paragraph's inline-end edge, opacity 0 by default, opacity 1 on `:hover` / `:focus-within` of the anchor or the sidenote itself. Hover-out delay 220ms so cursor can cross gutter without dismissal. RTL-aware via logical properties (mirrors automatically).
+- [x] Keyboard equivalent — `:focus-within` reveals sidenote when the ref `<a>` gains focus.
+- [x] Mobile / narrow viewport (< 70rem) — sidenote `display: none`; endnote section remains the canonical mobile affordance.
+- [ ] Click ref to pin/unpin sidenote (persistent visibility) — JS toggle, write to localStorage per-page so reload preserves pins.
+- [ ] Mobile tap-triggered inline expansion under the ref — JS-driven (concept calls for this; currently only endnotes serve mobile).
 
 ### Page types
 - [ ] CV page (arbitrary code, single page).

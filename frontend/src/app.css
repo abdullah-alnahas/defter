@@ -59,6 +59,48 @@ a[data-footnote-ref]:focus-visible {
   text-decoration: underline;
 }
 
+/* sidenote injected next to ref by prerender */
+.fn-anchor { position: relative; }
+.fn-anchor .sidenote {
+  display: none;
+}
+
+@media (min-width: 70rem) {
+  /* paragraphs become positioning ancestors so the sidenote can hang in the margin */
+  article .body p { position: relative; }
+  .fn-anchor .sidenote {
+    display: block;
+    position: absolute;
+    inset-inline-end: -15.5rem;
+    top: 0;
+    width: 13rem;
+    font-size: 0.82rem;
+    line-height: 1.55;
+    color: var(--muted);
+    text-align: start;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 180ms ease 220ms;
+  }
+  .fn-anchor .sidenote .sn-num {
+    color: var(--fg);
+    margin-inline-end: 0.3em;
+    font-feature-settings: 'tnum';
+  }
+  .fn-anchor .sidenote p { margin: 0; display: inline; }
+  .fn-anchor:hover .sidenote,
+  .fn-anchor:focus-within .sidenote,
+  .fn-anchor .sidenote:hover {
+    opacity: 1;
+    pointer-events: auto;
+    transition-delay: 0ms;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fn-anchor .sidenote { transition: none; }
+}
+
 /* endnote list */
 .footnotes {
   margin-top: 3rem;
