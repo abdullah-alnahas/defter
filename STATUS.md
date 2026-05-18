@@ -122,7 +122,7 @@ content/*.md                      sample pages (al-bidaya AR/RTL, on-reading-slo
 - [ ] Persistence beyond filesystem (DB? still filesystem with editor write?).
 
 ### Home page
-- [ ] Decide: blog view default vs other. Picked blogs + recent + full list candidate.
+- [x] Blog view default with three sections — **Picked** (frontmatter `featured = true`, hidden when none), **Recent** (latest 3 by date), **All** (full list, hidden when ≤ recent count). Block headings use uppercase muted-letterspaced labels to stay calm. Matches concept's "picked blogs, recent blogs, then full list" suggestion.
 
 ### Polish
 - [ ] Plenty of negative space pass.
