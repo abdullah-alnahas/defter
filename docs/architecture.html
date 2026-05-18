@@ -1,0 +1,693 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>defter — architecture for the FastAPI mind</title>
+<style>
+  :root {
+    --bg: #fbfaf7;
+    --fg: #1a1a1a;
+    --muted: #5e5e5e;
+    --rule: #e6e3dc;
+    --code-bg: #f3efe6;
+    --fe: #2563eb;     /* blue — frontend */
+    --fe-bg: #eaf1ff;
+    --be: #b45309;     /* amber — backend */
+    --be-bg: #fdf1dc;
+    --data: #15803d;   /* green — data/content */
+    --data-bg: #e3f4e7;
+    --warn-bg: #fff3cd;
+    --measure: 46rem;
+    --serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, 'Times New Roman', serif;
+    --mono: ui-monospace, 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--fg); font-family: var(--serif); font-size: 17px; line-height: 1.65; }
+  main { max-width: var(--measure); margin: 0 auto; padding: 2.5rem 1.25rem 6rem; }
+  h1 { font-size: 2.1rem; margin: 0 0 .25rem; font-weight: 600; letter-spacing: -.01em; }
+  h2 { font-size: 1.45rem; margin: 3rem 0 .8rem; font-weight: 600; border-bottom: 1px solid var(--rule); padding-bottom: .3rem; }
+  h3 { font-size: 1.12rem; margin: 1.8rem 0 .5rem; font-weight: 600; }
+  h4 { font-size: 1rem; margin: 1.2rem 0 .3rem; font-weight: 600; color: var(--muted); }
+  p { margin: 0 0 1rem; }
+  a { color: var(--fe); text-decoration: none; border-bottom: 1px dotted; }
+  a:hover { border-bottom-style: solid; }
+  hr { border: 0; border-top: 1px solid var(--rule); margin: 2.5rem 0; }
+  code { font-family: var(--mono); font-size: .92em; background: var(--code-bg); padding: 1px 5px; border-radius: 3px; }
+  pre { font-family: var(--mono); font-size: .85rem; line-height: 1.55; background: #fff; border: 1px solid var(--rule); border-radius: 6px; padding: .9rem 1rem; overflow-x: auto; }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  .lead { color: var(--muted); font-size: 1.08rem; margin-bottom: 2rem; }
+  .pill { display: inline-block; font-family: var(--mono); font-size: .72rem; padding: 2px 7px; border-radius: 999px; margin-right: .35rem; vertical-align: middle; letter-spacing: .04em; text-transform: uppercase; }
+  .pill.fe { background: var(--fe-bg); color: var(--fe); }
+  .pill.be { background: var(--be-bg); color: var(--be); }
+  .pill.data { background: var(--data-bg); color: var(--data); }
+  .pill.warn { background: var(--warn-bg); color: #7a5a00; }
+  .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; vertical-align: middle; margin-right: 4px; }
+  /* TOC */
+  nav.toc { background: #fff; border: 1px solid var(--rule); border-radius: 8px; padding: 1rem 1.25rem; margin: 1.5rem 0 2.5rem; }
+  nav.toc h2 { border: 0; margin: 0 0 .4rem; font-size: 1rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); padding: 0; }
+  nav.toc ol { margin: 0; padding-left: 1.4rem; }
+  nav.toc li { margin: .1rem 0; }
+  nav.toc a { border-bottom: none; color: var(--fg); }
+  nav.toc a:hover { color: var(--fe); }
+  /* Collapsibles */
+  details { background: #fff; border: 1px solid var(--rule); border-radius: 8px; padding: .15rem 1rem; margin: 1rem 0; }
+  details[open] { padding: .15rem 1rem 1rem; }
+  summary { cursor: pointer; padding: .7rem 0; font-weight: 600; }
+  summary::-webkit-details-marker { color: var(--muted); }
+  /* Layer cards */
+  .layer { border-radius: 8px; padding: 1rem 1.1rem; margin: 1rem 0; border: 1px solid; }
+  .layer.browser { border-color: #cbd5e1; background: #f8fafc; }
+  .layer.fe { border-color: #bfd7ff; background: var(--fe-bg); }
+  .layer.be { border-color: #f4d28b; background: var(--be-bg); }
+  .layer.data { border-color: #b9e0c3; background: var(--data-bg); }
+  .layer h3 { margin-top: .2rem; }
+  /* Tables */
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: .94rem; }
+  th, td { text-align: left; padding: .55rem .7rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { background: #fff; font-weight: 600; }
+  td code { font-size: .88em; }
+  /* Diagrams */
+  .diagram { background: #fff; border: 1px solid var(--rule); border-radius: 8px; padding: 1rem; margin: 1.2rem 0; overflow-x: auto; }
+  .diagram svg { display: block; max-width: 100%; height: auto; }
+  .ascii { font-family: var(--mono); font-size: .82rem; line-height: 1.35; white-space: pre; background: #fff; border: 1px solid var(--rule); border-radius: 6px; padding: 1rem; overflow-x: auto; }
+  /* Callouts */
+  .note { border-left: 3px solid var(--fe); background: var(--fe-bg); padding: .7rem 1rem; border-radius: 0 6px 6px 0; margin: 1rem 0; }
+  .warn { border-left: 3px solid #b45309; background: var(--warn-bg); padding: .7rem 1rem; border-radius: 0 6px 6px 0; margin: 1rem 0; }
+  .rosetta th:first-child { width: 30%; }
+  .rosetta td:first-child { font-family: var(--mono); }
+  .gloss dt { font-family: var(--mono); font-weight: 600; margin-top: .9rem; }
+  .gloss dd { margin: .1rem 0 .4rem 1.2rem; color: var(--fg); }
+  /* Highlight tags inside code blocks */
+  .hl-fe { background: var(--fe-bg); padding: 0 3px; border-radius: 3px; }
+  .hl-be { background: var(--be-bg); padding: 0 3px; border-radius: 3px; }
+  .hl-data { background: var(--data-bg); padding: 0 3px; border-radius: 3px; }
+  /* Lifecycle */
+  .step { display: grid; grid-template-columns: 2.2rem 1fr; gap: .8rem; margin: .9rem 0; }
+  .step .num { font-family: var(--mono); font-weight: 700; background: var(--fg); color: #fff; width: 2rem; height: 2rem; border-radius: 50%; display: grid; place-items: center; font-size: .85rem; }
+  .step .body p { margin: 0; }
+  .step .tag { display: inline-block; font-family: var(--mono); font-size: .72rem; padding: 1px 6px; border-radius: 4px; margin-right: .4rem; }
+  .step .tag.fe { background: var(--fe-bg); color: var(--fe); }
+  .step .tag.be { background: var(--be-bg); color: var(--be); }
+  .step .tag.data { background: var(--data-bg); color: var(--data); }
+  .step .tag.net { background: #eee; color: #444; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #15151a; --fg: #eee; --muted: #aaa; --rule: #2c2c33; --code-bg: #1f1f25; }
+    pre, .diagram, nav.toc, details, table th, .ascii { background: #1c1c22; color: var(--fg); }
+    .layer.browser { background: #1d1f24; border-color: #333; }
+    .layer.fe { background: #14213d; border-color: #1e3a8a; }
+    .layer.be { background: #2a1d04; border-color: #92400e; }
+    .layer.data { background: #082d18; border-color: #166534; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+<h1>defter — architecture, explained from FastAPI</h1>
+<p class="lead">A walking tour of how this personal site is wired, for someone who knows Python + a little vanilla JS. No prior Rust or Svelte assumed.</p>
+
+<p>
+  <span class="pill fe">frontend</span>
+  <span class="pill be">backend</span>
+  <span class="pill data">content</span>
+  <span class="pill warn">future</span>
+</p>
+
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#big-picture">Big picture</a></li>
+    <li><a href="#layers">The layers (what each is responsible for)</a></li>
+    <li><a href="#folders">Folder map (why each file exists)</a></li>
+    <li><a href="#lifecycle">A concrete request lifecycle</a></li>
+    <li><a href="#state">Where state lives</a></li>
+    <li><a href="#auth">Where authentication happens</a></li>
+    <li><a href="#wire">How frontend and backend communicate</a></li>
+    <li><a href="#snippets">Small annotated snippets</a></li>
+    <li><a href="#rosetta-py">Rosetta: FastAPI ↔ Actix</a></li>
+    <li><a href="#rosetta-js">Rosetta: vanilla JS ↔ Svelte 5</a></li>
+    <li><a href="#why">Why these choices</a></li>
+    <li><a href="#glossary">Glossary</a></li>
+  </ol>
+</nav>
+
+<!-- =================================================================== -->
+<h2 id="big-picture">1. Big picture</h2>
+
+<p>defter is a tiny three-layer system: a <strong>browser</strong> running a single-page app, a <strong>Rust web server</strong> that hands it data, and a <strong>folder of markdown files</strong> instead of a database.</p>
+
+<div class="diagram" aria-label="System overview">
+<svg viewBox="0 0 720 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="d1-title">
+  <title id="d1-title">Browser ↔ Actix backend ↔ content folder</title>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#444"/>
+    </marker>
+  </defs>
+
+  <!-- Browser -->
+  <rect x="20" y="60" width="180" height="240" rx="10" fill="#f8fafc" stroke="#94a3b8"/>
+  <text x="110" y="85" text-anchor="middle" font-family="ui-monospace" font-size="13" fill="#475569">BROWSER</text>
+  <rect x="40" y="105" width="140" height="40" rx="6" fill="#eaf1ff" stroke="#2563eb"/>
+  <text x="110" y="130" text-anchor="middle" font-size="13" fill="#1e3a8a">index.html</text>
+  <rect x="40" y="155" width="140" height="50" rx="6" fill="#eaf1ff" stroke="#2563eb"/>
+  <text x="110" y="178" text-anchor="middle" font-size="13" fill="#1e3a8a">Svelte SPA</text>
+  <text x="110" y="195" text-anchor="middle" font-size="11" fill="#1e3a8a">(JS bundle)</text>
+  <rect x="40" y="215" width="140" height="50" rx="6" fill="#eaf1ff" stroke="#2563eb"/>
+  <text x="110" y="238" text-anchor="middle" font-size="13" fill="#1e3a8a">router + fetch</text>
+  <text x="110" y="255" text-anchor="middle" font-size="11" fill="#1e3a8a">(history API)</text>
+
+  <!-- Backend -->
+  <rect x="270" y="60" width="180" height="240" rx="10" fill="#fdf1dc" stroke="#b45309"/>
+  <text x="360" y="85" text-anchor="middle" font-family="ui-monospace" font-size="13" fill="#7a3c00">ACTIX BACKEND</text>
+  <rect x="290" y="105" width="140" height="40" rx="6" fill="#fff" stroke="#b45309"/>
+  <text x="360" y="130" text-anchor="middle" font-size="13" fill="#7a3c00">static files</text>
+  <rect x="290" y="155" width="140" height="40" rx="6" fill="#fff" stroke="#b45309"/>
+  <text x="360" y="180" text-anchor="middle" font-size="13" fill="#7a3c00">/api/pages</text>
+  <rect x="290" y="205" width="140" height="40" rx="6" fill="#fff" stroke="#b45309"/>
+  <text x="360" y="230" text-anchor="middle" font-size="13" fill="#7a3c00">/api/pages/&#123;slug&#125;</text>
+  <rect x="290" y="255" width="140" height="35" rx="6" fill="#fff" stroke="#b45309"/>
+  <text x="360" y="278" text-anchor="middle" font-size="13" fill="#7a3c00">page.rs (parser)</text>
+
+  <!-- Content -->
+  <rect x="520" y="60" width="180" height="240" rx="10" fill="#e3f4e7" stroke="#15803d"/>
+  <text x="610" y="85" text-anchor="middle" font-family="ui-monospace" font-size="13" fill="#0e5022">CONTENT FOLDER</text>
+  <rect x="540" y="115" width="140" height="35" rx="6" fill="#fff" stroke="#15803d"/>
+  <text x="610" y="138" text-anchor="middle" font-size="12" fill="#0e5022">al-bidaya.md</text>
+  <rect x="540" y="160" width="140" height="35" rx="6" fill="#fff" stroke="#15803d"/>
+  <text x="610" y="183" text-anchor="middle" font-size="12" fill="#0e5022">on-reading-slowly.md</text>
+  <rect x="540" y="205" width="140" height="35" rx="6" fill="#fff" stroke="#15803d"/>
+  <text x="610" y="228" text-anchor="middle" font-size="12" fill="#0e5022">…your future post.md</text>
+  <text x="610" y="270" text-anchor="middle" font-size="11" fill="#0e5022">(plain text on disk)</text>
+
+  <!-- Arrows -->
+  <line x1="200" y1="180" x2="268" y2="180" stroke="#444" stroke-width="2" marker-end="url(#arr)" marker-start="url(#arr)"/>
+  <text x="234" y="170" text-anchor="middle" font-size="11" fill="#444">HTTP / JSON</text>
+  <line x1="450" y1="220" x2="518" y2="180" stroke="#444" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="484" y="195" text-anchor="middle" font-size="11" fill="#444">read file</text>
+
+  <!-- Caption -->
+  <text x="360" y="335" text-anchor="middle" font-size="11" fill="#666">
+    The arrow between browser and backend is just HTTP. Same protocol as FastAPI.
+  </text>
+</svg>
+</div>
+
+<p><strong>Compared to what you know:</strong> swap FastAPI for Actix (Rust web framework), swap a React/Vue SPA for a Svelte SPA, and swap a Postgres/SQLite DB for a folder of markdown files. The shape is the same.</p>
+
+<!-- =================================================================== -->
+<h2 id="layers">2. The layers</h2>
+
+<div class="layer browser">
+  <h3>2.1 Browser <span class="pill">runtime</span></h3>
+  <p>Loads <code>index.html</code>, runs the compiled Svelte JS, paints pixels. Same role as a browser running a React or vanilla-JS app.</p>
+  <p><strong>Responsibilities:</strong> rendering, listening for clicks, keeping the URL bar in sync, sending <code>fetch()</code> calls.</p>
+</div>
+
+<div class="layer fe">
+  <h3>2.2 Frontend — Svelte 5 SPA <span class="pill fe">frontend</span></h3>
+  <p>A <em>single-page application</em>: one HTML file, one JS bundle. Navigation never reloads the page — JS rewrites the URL and swaps which component is shown.</p>
+  <p><strong>Responsibilities</strong></p>
+  <ul>
+    <li>Decide which view to show based on URL (<code>/</code> → index, <code>/p/&lt;slug&gt;</code> → page).</li>
+    <li>Call the backend with <code>fetch('/api/...')</code>.</li>
+    <li>Convert markdown text to HTML (<code>marked</code> library).</li>
+    <li>Wrap every page in the mandatory basmalah/hamd/salawat layout (<code>Page.svelte</code>).</li>
+  </ul>
+
+  <details>
+    <summary>What's a "Svelte component" in one paragraph?</summary>
+    <p>A <code>.svelte</code> file is a self-contained piece of UI. It looks like an HTML file with <code>&lt;script&gt;</code>, markup, and <code>&lt;style&gt;</code> sections. At build time the Svelte compiler turns it into plain JavaScript that creates and updates DOM nodes. Think Jinja templates that also carry their own behaviour — except instead of running on the server they run in the browser.</p>
+  </details>
+</div>
+
+<div class="layer be">
+  <h3>2.3 Backend — Actix-web (Rust) <span class="pill be">backend</span></h3>
+  <p>An HTTP server written in Rust. Two jobs:</p>
+  <ol>
+    <li><strong>Serve the SPA</strong> — hand back <code>frontend/dist/index.html</code> + the JS/CSS bundle for any non-API URL.</li>
+    <li><strong>Serve the data API</strong> — two endpoints that read markdown files and return JSON.</li>
+  </ol>
+  <p>If you've written FastAPI handlers, the mental model is identical: <em>function decorated with a route, returns a response</em>. The only differences are the language and that Rust gives you compile-time guarantees.</p>
+
+  <details>
+    <summary>"Why Rust if it's a personal site?"</summary>
+    <p>Honest answer: low memory, single static binary, fast cold start, owner enjoys it. None of those are strictly required at this scale — a FastAPI version would work fine. The architecture below would barely change.</p>
+  </details>
+</div>
+
+<div class="layer data">
+  <h3>2.4 "Database" — the <code>content/</code> folder <span class="pill data">content</span></h3>
+  <p>There is no database. The backend reads <code>content/*.md</code> from disk on every request. Each file <em>is</em> a row.</p>
+  <p>Each markdown file starts with a small block of metadata (the <em>frontmatter</em>) between <code>+++</code> markers, then the body:</p>
+<pre><code>+++
+title = "On reading slowly"
+lang  = "en"
+dir   = "ltr"
+date  = "2026-05-04"
++++
+
+Reading slowly is not a failure of speed…
+</code></pre>
+  <p>The filename (minus <code>.md</code>) is the page's <em>slug</em> — the URL piece.</p>
+  <p class="note"><strong>FastAPI analogy:</strong> imagine a SQLAlchemy model <code>Page(slug, title, lang, dir, date, body)</code>. Now imagine your "DB" is literally <code>os.listdir("content/")</code>. That's it.</p>
+</div>
+
+<!-- =================================================================== -->
+<h2 id="folders">3. Folder map</h2>
+
+<pre class="ascii">defter/
+├── backend/                 <span class="hl-be">Rust server (Actix)</span>
+│   ├── Cargo.toml           dependency manifest (like pyproject.toml)
+│   └── src/
+│       ├── main.rs          starts the HTTP server, declares routes
+│       └── page.rs          frontmatter parsing + load_one/load_all
+│
+├── frontend/                <span class="hl-fe">Svelte SPA source</span>
+│   ├── package.json         JS dependencies + scripts
+│   ├── index.html           bare HTML shell — one &lt;div id="app"&gt; + the JS entry
+│   ├── vite.config.js       Vite (build tool) config
+│   └── src/
+│       ├── main.js          mounts &lt;App/&gt; into #app
+│       ├── App.svelte       root component: picks IndexPage or PageView
+│       ├── app.css          global CSS variables (colours, font stacks)
+│       ├── lib/
+│       │   ├── Page.svelte         mandatory basmalah/hamd/salawat wrapper
+│       │   ├── Link.svelte         &lt;a&gt; that uses the SPA router instead of reloading
+│       │   └── router.svelte.js    ~15 lines of history-API routing
+│       └── pages/
+│           ├── IndexPage.svelte    list of pages
+│           └── PageView.svelte     single page view
+│
+├── content/                 <span class="hl-data">your "database": one .md file per page</span>
+│   ├── al-bidaya.md
+│   └── on-reading-slowly.md
+│
+├── concept.txt              project vision (source of truth)
+├── README.md                quick start + iteration log
+└── STATUS.md                what's done / what's next</pre>
+
+<p><strong>Why split <code>backend/</code> and <code>frontend/</code>?</strong> Different toolchains. Rust uses <code>cargo</code>; the Svelte side uses <code>bun</code>/<code>npm</code>/Vite. Keeping them in sibling folders means each side runs <code>cargo …</code> or <code>bun …</code> without stepping on the other.</p>
+
+<p><strong>Why <code>lib/</code> vs <code>pages/</code>?</strong> Pure convention. <code>pages/</code> = top-level views you can land on by URL. <code>lib/</code> = reusable building blocks. (Same idea as <code>app/views.py</code> vs <code>app/components.py</code>.)</p>
+
+<!-- =================================================================== -->
+<h2 id="lifecycle">4. A concrete request lifecycle</h2>
+
+<p>Scenario: the user is on the home page and clicks the link "On reading slowly". Here is everything that happens, end to end.</p>
+
+<div class="diagram" aria-label="Lifecycle sequence">
+<svg viewBox="0 0 720 380" xmlns="http://www.w3.org/2000/svg" role="img">
+  <title>Click → fetch → handler → file → JSON → render</title>
+  <!-- lanes -->
+  <text x="60"  y="22" font-family="ui-monospace" font-size="12" fill="#1e3a8a">USER</text>
+  <text x="200" y="22" font-family="ui-monospace" font-size="12" fill="#1e3a8a">SVELTE (browser)</text>
+  <text x="395" y="22" font-family="ui-monospace" font-size="12" fill="#7a3c00">ACTIX (server)</text>
+  <text x="600" y="22" font-family="ui-monospace" font-size="12" fill="#0e5022">DISK</text>
+  <line x1="80"  y1="35" x2="80"  y2="360" stroke="#cbd5e1" stroke-dasharray="3 3"/>
+  <line x1="250" y1="35" x2="250" y2="360" stroke="#bfd7ff" stroke-dasharray="3 3"/>
+  <line x1="450" y1="35" x2="450" y2="360" stroke="#f4d28b" stroke-dasharray="3 3"/>
+  <line x1="640" y1="35" x2="640" y2="360" stroke="#b9e0c3" stroke-dasharray="3 3"/>
+
+  <!-- step 1: click -->
+  <line x1="80"  y1="60" x2="250" y2="60" stroke="#1e3a8a" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="165" y="55" text-anchor="middle" font-size="11" fill="#1e3a8a">click on &lt;a href="/p/on-reading-slowly"&gt;</text>
+
+  <!-- step 2: pushState + render PageView -->
+  <rect x="200" y="80" width="100" height="40" rx="4" fill="#eaf1ff" stroke="#2563eb"/>
+  <text x="250" y="98" text-anchor="middle" font-size="11" fill="#1e3a8a">history.pushState</text>
+  <text x="250" y="112" text-anchor="middle" font-size="11" fill="#1e3a8a">render &lt;PageView/&gt;</text>
+
+  <!-- step 3: fetch -->
+  <line x1="250" y1="145" x2="450" y2="145" stroke="#444" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="350" y="140" text-anchor="middle" font-size="11" fill="#444">GET /api/pages/on-reading-slowly</text>
+
+  <!-- step 4: handler runs -->
+  <rect x="395" y="160" width="110" height="40" rx="4" fill="#fdf1dc" stroke="#b45309"/>
+  <text x="450" y="178" text-anchor="middle" font-size="11" fill="#7a3c00">get_page handler</text>
+  <text x="450" y="192" text-anchor="middle" font-size="11" fill="#7a3c00">→ page::load_one</text>
+
+  <!-- step 5: read disk -->
+  <line x1="450" y1="220" x2="640" y2="220" stroke="#444" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="545" y="215" text-anchor="middle" font-size="11" fill="#444">open + read on-reading-slowly.md</text>
+
+  <!-- step 6: bytes back -->
+  <line x1="640" y1="245" x2="450" y2="245" stroke="#444" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="545" y="240" text-anchor="middle" font-size="11" fill="#444">raw bytes</text>
+
+  <!-- step 7: parse + json -->
+  <rect x="395" y="260" width="110" height="40" rx="4" fill="#fdf1dc" stroke="#b45309"/>
+  <text x="450" y="278" text-anchor="middle" font-size="11" fill="#7a3c00">parse frontmatter</text>
+  <text x="450" y="292" text-anchor="middle" font-size="11" fill="#7a3c00">serde → JSON</text>
+
+  <!-- step 8: response -->
+  <line x1="450" y1="325" x2="250" y2="325" stroke="#444" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="350" y="320" text-anchor="middle" font-size="11" fill="#444">200 application/json</text>
+
+  <!-- step 9: render -->
+  <rect x="200" y="340" width="100" height="20" rx="4" fill="#eaf1ff" stroke="#2563eb"/>
+  <text x="250" y="354" text-anchor="middle" font-size="11" fill="#1e3a8a">marked → HTML → DOM</text>
+</svg>
+</div>
+
+<div class="step"><div class="num">1</div><div class="body">
+  <span class="tag fe">FE</span><strong>Click.</strong> The user clicks <code>&lt;a href="/p/on-reading-slowly"&gt;</code> rendered by <code>IndexPage.svelte</code>. The element is actually a <code>&lt;Link&gt;</code> component that intercepts the click so the browser doesn't do a full page reload.
+</div></div>
+
+<div class="step"><div class="num">2</div><div class="body">
+  <span class="tag fe">FE</span><strong>Route change.</strong> <code>Link</code> calls <code>router.navigate('/p/on-reading-slowly')</code>, which calls <code>history.pushState</code> (browser URL changes, no reload) and updates a reactive <code>path</code> variable. <code>App.svelte</code> sees the new path and renders <code>&lt;PageView slug="on-reading-slowly" /&gt;</code> instead of <code>&lt;IndexPage /&gt;</code>.
+</div></div>
+
+<div class="step"><div class="num">3</div><div class="body">
+  <span class="tag net">NET</span><strong>HTTP call.</strong> <code>PageView</code> kicks off <code>fetch('/api/pages/on-reading-slowly')</code>. This is the same <code>fetch()</code> you'd write in vanilla JS — nothing Svelte-specific about it.
+</div></div>
+
+<div class="step"><div class="num">4</div><div class="body">
+  <span class="tag be">BE</span><strong>Handler matches.</strong> Actix routes the request to <code>get_page(slug: web::Path&lt;String&gt;)</code>. This is the equivalent of FastAPI's <code>@app.get("/api/pages/{slug}") async def get_page(slug: str):</code>.
+</div></div>
+
+<div class="step"><div class="num">5</div><div class="body">
+  <span class="tag be">BE</span><strong>Validate.</strong> The slug is checked (no <code>/</code>, no <code>..</code>) so a clever URL can't read random files on the server.
+</div></div>
+
+<div class="step"><div class="num">6</div><div class="body">
+  <span class="tag data">FS</span><strong>Read file.</strong> <code>page::load_one</code> opens <code>content/on-reading-slowly.md</code> and reads the bytes.
+</div></div>
+
+<div class="step"><div class="num">7</div><div class="body">
+  <span class="tag be">BE</span><strong>Parse.</strong> The bytes are split at <code>+++</code> markers; the top half is parsed as TOML (gives <code>title</code>, <code>lang</code>, <code>dir</code>, <code>date</code>) and the bottom half is kept as the raw markdown body.
+</div></div>
+
+<div class="step"><div class="num">8</div><div class="body">
+  <span class="tag be">BE</span><strong>Serialize.</strong> The parsed struct is turned into JSON automatically by <code>serde</code> (Rust's serialization library — think <code>pydantic</code>'s <code>.model_dump_json()</code>).
+</div></div>
+
+<div class="step"><div class="num">9</div><div class="body">
+  <span class="tag net">NET</span><strong>Response.</strong> <code>200 OK</code>, <code>Content-Type: application/json</code>, body =
+<pre><code>{ "slug":"on-reading-slowly", "title":"On reading slowly",
+  "lang":"en", "dir":"ltr", "date":"2026-05-04",
+  "body":"Reading slowly is not a failure of speed…" }</code></pre>
+</div></div>
+
+<div class="step"><div class="num">10</div><div class="body">
+  <span class="tag fe">FE</span><strong>Render.</strong> <code>PageView</code> awaits the promise, passes the body through <code>marked.parse()</code> (markdown → HTML string), and mounts it inside the <code>&lt;Page&gt;</code> wrapper, which itself renders the opening basmalah, the page content, and the closing salawat.
+</div></div>
+
+<p class="note"><strong>FastAPI mirror:</strong> the only step that has no FastAPI equivalent is the build-time compilation of Svelte components. Everything else maps line-for-line: a request hits a typed handler, a model is serialized, JSON goes back over the wire.</p>
+
+<!-- =================================================================== -->
+<h2 id="state">5. Where state lives</h2>
+
+<table>
+  <thead><tr><th>Kind of state</th><th>Where it lives</th><th>FastAPI/vanilla-JS analogue</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>Page content</strong></td>
+      <td><code>content/*.md</code> on the server's disk</td>
+      <td>A SQLite DB, but with one file per row.</td>
+    </tr>
+    <tr>
+      <td><strong>Current URL / route</strong></td>
+      <td>In-memory reactive variable inside <code>router.svelte.js</code></td>
+      <td><code>window.location.pathname</code> + a <code>let path = …</code> in plain JS.</td>
+    </tr>
+    <tr>
+      <td><strong>"Which page am I fetching"</strong></td>
+      <td>A <code>Promise</code> held inside <code>PageView</code></td>
+      <td>The pending Promise of a <code>fetch()</code> call. Same thing.</td>
+    </tr>
+    <tr>
+      <td><strong>User session / login</strong></td>
+      <td>Does not exist yet.</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><strong>Server-side cache</strong></td>
+      <td>Does not exist yet — every request re-reads the file.</td>
+      <td>You'd add Redis or <code>@lru_cache</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The backend is <strong>stateless between requests</strong>: it holds no in-memory data about pages or users. Every API call is a fresh "read the folder" operation. This is deliberate — fewer moving parts.</p>
+
+<!-- =================================================================== -->
+<h2 id="auth">6. Where authentication happens</h2>
+
+<p class="warn"><strong>Currently: nowhere.</strong> defter is a read-only public site. There is no login, no session, no admin. Anyone can read the API; nobody can write through it.</p>
+
+<p>The intended future is an editor (per <code>concept.txt</code>). When that lands, the natural place to plug auth in is:</p>
+<ul>
+  <li>A new <code>POST/PUT /api/pages/&lt;slug&gt;</code> handler.</li>
+  <li>An Actix <em>middleware</em> in <code>main.rs</code> that checks an auth header before the handler runs. Same idea as a FastAPI <code>Depends(get_current_user)</code> dependency.</li>
+  <li>Frontend stores a token (cookie or <code>localStorage</code>) and attaches it to <code>fetch()</code> calls.</li>
+</ul>
+
+<!-- =================================================================== -->
+<h2 id="wire">7. How frontend and backend communicate</h2>
+
+<p>One protocol: HTTP. Two endpoints today:</p>
+
+<table>
+  <thead><tr><th>Method + path</th><th>What it returns</th><th>Who calls it</th></tr></thead>
+  <tbody>
+    <tr><td><code>GET /api/pages</code></td><td>JSON array of metadata (no bodies), sorted newest first</td><td><code>IndexPage.svelte</code></td></tr>
+    <tr><td><code>GET /api/pages/{slug}</code></td><td>JSON object with metadata + markdown body</td><td><code>PageView.svelte</code></td></tr>
+    <tr><td><code>GET /anything-else</code></td><td>The SPA's <code>index.html</code></td><td>The browser, on first load or refresh</td></tr>
+  </tbody>
+</table>
+
+<p>That last row is the only piece that looks unusual. It's called the <em>SPA fallback</em>: if the URL doesn't match a static file or an API route, return <code>index.html</code> so the Svelte router can take over. Without it, refreshing on <code>/p/on-reading-slowly</code> would 404 (because there is no such file on disk — that path exists only in JS).</p>
+
+<!-- =================================================================== -->
+<h2 id="snippets">8. Small annotated snippets</h2>
+
+<h3>8.1 The whole backend, in 30 lines (paraphrased)</h3>
+<pre><code><span class="hl-be">#[get("/api/pages")]</span>                       // like @app.get(...)
+async fn list_pages() -&gt; impl Responder {
+    match page::load_all(&amp;content_dir()) {     // read folder, parse each .md
+        Ok(pages) =&gt; HttpResponse::Ok().json(pages),
+        Err(_)    =&gt; HttpResponse::InternalServerError().finish(),
+    }
+}
+
+<span class="hl-be">#[get("/api/pages/{slug}")]</span>
+async fn get_page(slug: web::Path&lt;String&gt;) -&gt; impl Responder {
+    match page::load_one(&amp;content_dir(), &amp;slug) {
+        Ok(p)                       =&gt; HttpResponse::Ok().json(p),
+        Err(page::PageError::NotFound) =&gt; HttpResponse::NotFound().finish(),
+        Err(_)                       =&gt; HttpResponse::InternalServerError().finish(),
+    }
+}
+
+#[actix_web::main]
+async fn main() -&gt; std::io::Result&lt;()&gt; {
+    HttpServer::new(|| {
+        App::new()
+            .service(list_pages)               // register the two routes
+            .service(get_page)
+            .service(Files::new("/", &amp;dist)    // serve the Svelte build
+                       .index_file("index.html")
+                       .default_handler(...))  // SPA fallback
+    })
+    .bind("127.0.0.1:8787")?.run().await
+}
+</code></pre>
+
+<details>
+  <summary>Rust idioms to recognize in the snippet above</summary>
+  <ul>
+    <li><code>#[get("…")]</code> — an <em>attribute macro</em>. Same role as FastAPI's <code>@app.get("...")</code> decorator.</li>
+    <li><code>match … { Ok(x) =&gt; …, Err(e) =&gt; … }</code> — pattern matching on a <code>Result</code>. Python equivalent: <code>try/except</code>, but explicit in the type signature.</li>
+    <li><code>impl Responder</code> — "this function returns <em>something</em> that can be turned into an HTTP response." Similar to FastAPI letting you return a dict, a Pydantic model, or a <code>Response</code>.</li>
+    <li><code>async fn</code> — same as Python's <code>async def</code>.</li>
+    <li><code>&amp;</code> in <code>&amp;slug</code> — "borrow this value, don't take ownership of it." Unique to Rust; treat it as "pass by reference" for now.</li>
+  </ul>
+</details>
+
+<h3>8.2 The frontmatter parser (the heart of <code>page.rs</code>)</h3>
+<pre><code>fn split_frontmatter(src: &amp;str) -&gt; Result&lt;(&amp;str, &amp;str), PageError&gt; {
+    // 1. file must start with "+++\n"
+    let rest = src.strip_prefix("+++")?.strip_prefix('\n')?;
+    // 2. find the closing "\n+++"
+    let close = rest.find("\n+++")?;
+    let fm   = &amp;rest[..close];                       // metadata block
+    let body = rest[close + 4..].trim_start_matches('\n'); // markdown body
+    Ok((fm, body))
+}
+</code></pre>
+<p>That's the entire format. No regex, no library, no schema. The TOML block is then parsed with the <code>toml</code> crate into a typed <code>Frontmatter</code> struct.</p>
+
+<h3>8.3 The frontend router, in full</h3>
+<pre><code><span class="hl-fe">let _path = $state(window.location.pathname);</span>   // reactive variable
+
+window.addEventListener('popstate', () =&gt; {
+  _path = window.location.pathname;                  // back/forward buttons
+});
+
+export const router = {
+  get path() { return _path; },
+  navigate(to) {
+    if (to === _path) return;
+    history.pushState({}, '', to);                   // change URL, no reload
+    _path = to;                                      // triggers re-render
+  },
+};
+</code></pre>
+<p>That's the whole router. No library. The magic word is <code>$state(...)</code>: Svelte 5's way to say "this variable is reactive — any component that reads it will re-render when it changes." Mentally: <code>useState</code> from React but as a language feature.</p>
+
+<h3>8.4 The mandatory page wrapper</h3>
+<pre><code>&lt;script&gt;
+  let { title, dir = 'ltr', lang = 'en', children } = $props();
+&lt;/script&gt;
+
+&lt;article {dir} {lang}&gt;
+  &lt;header lang="ar" dir="rtl"&gt;
+    &lt;p&gt;بسم الله الرحمن الرحيم&lt;/p&gt;
+    &lt;p&gt;الحمد لله رب العالمين&lt;/p&gt;
+    &lt;p&gt;وأفضل الصلاة وأتم التسليم على سيدنا محمد وعلى آله وصحبه أجمعين&lt;/p&gt;
+  &lt;/header&gt;
+
+  &lt;h1&gt;{title}&lt;/h1&gt;
+  &lt;section&gt;{@render children?.()}&lt;/section&gt;
+
+  &lt;footer lang="ar" dir="rtl"&gt;
+    &lt;p&gt;وصلى الله على سيدنا محمد وعلى آله وصحبه أجمعين&lt;/p&gt;
+    &lt;p&gt;والحمد لله رب العالمين&lt;/p&gt;
+  &lt;/footer&gt;
+&lt;/article&gt;
+</code></pre>
+<ul>
+  <li><code>$props()</code> — declares which props this component accepts. Equivalent to a React function component's argument destructuring.</li>
+  <li><code>{@render children?.()}</code> — "render whatever the parent component nested inside me." Equivalent to React's <code>{children}</code> or Vue's default <code>&lt;slot/&gt;</code>.</li>
+  <li><code>{dir} {lang}</code> — Svelte shorthand for <code>dir={dir} lang={lang}</code>.</li>
+</ul>
+
+<!-- =================================================================== -->
+<h2 id="rosetta-py">9. Rosetta: FastAPI ↔ Actix</h2>
+<table class="rosetta">
+  <thead><tr><th>FastAPI</th><th>Actix (defter)</th></tr></thead>
+  <tbody>
+    <tr><td>@app.get("/api/pages")</td><td>#[get("/api/pages")]</td></tr>
+    <tr><td>async def get_page(slug: str):</td><td>async fn get_page(slug: web::Path&lt;String&gt;)</td></tr>
+    <tr><td>raise HTTPException(404)</td><td>HttpResponse::NotFound().finish()</td></tr>
+    <tr><td>return pydantic_model</td><td>HttpResponse::Ok().json(my_struct)</td></tr>
+    <tr><td>Pydantic <code>BaseModel</code></td><td>Rust struct + <code>#[derive(Serialize, Deserialize)]</code></td></tr>
+    <tr><td><code>uvicorn main:app --port 8787</code></td><td><code>cargo run</code> (binds to 127.0.0.1:8787)</td></tr>
+    <tr><td><code>pip install fastapi</code></td><td>Add to <code>Cargo.toml</code> → <code>cargo build</code> fetches it</td></tr>
+    <tr><td>Middleware via <code>app.add_middleware(...)</code></td><td><code>.wrap(MyMiddleware)</code> on the App builder</td></tr>
+    <tr><td>Dependency injection (<code>Depends</code>)</td><td>Extractors (function params with types like <code>web::Path&lt;T&gt;</code>, <code>web::Json&lt;T&gt;</code>)</td></tr>
+  </tbody>
+</table>
+
+<!-- =================================================================== -->
+<h2 id="rosetta-js">10. Rosetta: vanilla JS ↔ Svelte 5</h2>
+<table class="rosetta">
+  <thead><tr><th>Vanilla JS</th><th>Svelte 5</th></tr></thead>
+  <tbody>
+    <tr><td><code>document.querySelector('#app').textContent = x</code></td><td>Just write <code>{x}</code> in markup. The compiler wires updates.</td></tr>
+    <tr><td><code>let x = 0; updateUI()</code> after every change</td><td><code>let x = $state(0)</code>. Reads in markup auto-update.</td></tr>
+    <tr><td><code>fetch('/api/...').then(r =&gt; r.json())</code></td><td>Identical. Used inside <code>{#await promise}…{:then val}…{/await}</code>.</td></tr>
+    <tr><td><code>addEventListener('click', handler)</code></td><td><code>&lt;button onclick={handler}&gt;</code></td></tr>
+    <tr><td>Re-render = manual</td><td>Re-render = automatic when a <code>$state</code> variable changes</td></tr>
+    <tr><td>Components = your own functions returning HTML strings</td><td>Components = <code>.svelte</code> files compiled to JS classes</td></tr>
+  </tbody>
+</table>
+
+<!-- =================================================================== -->
+<h2 id="why">11. Why these choices</h2>
+
+<details>
+  <summary>Why a SPA at all, instead of plain server-rendered HTML?</summary>
+  <p>The site's concept calls for in-page interactivity (hidden-on-hover navbar, TL;DR buttons, future executable code blocks). Those want a JS runtime anyway. Once you've decided you need JS, a SPA gets you free client-side navigation (no full reloads between pages → calm reading experience).</p>
+</details>
+
+<details>
+  <summary>Why filesystem instead of a database?</summary>
+  <p>Posts are written in markdown anyway. A folder is the simplest possible store: it's diff-able in git, editable in any text editor, and survives without a running daemon. The price is no full-text search and no concurrent writes — neither matters for a one-author blog.</p>
+</details>
+
+<details>
+  <summary>Why a mandatory wrapper component (<code>Page.svelte</code>)?</summary>
+  <p>The owner wants every page on the site to open with basmalah/hamd/salawat and close with salawat/hamd. Putting it in a wrapper makes it impossible to forget: if you don't go through <code>&lt;Page&gt;</code>, you can't render content.</p>
+</details>
+
+<details>
+  <summary>Why TOML frontmatter instead of YAML?</summary>
+  <p>Smaller surface area, no indentation traps, and Rust's <code>toml</code> crate is mature. Functionally interchangeable with YAML for this metadata.</p>
+</details>
+
+<!-- =================================================================== -->
+<h2 id="glossary">12. Glossary</h2>
+
+<dl class="gloss">
+  <dt>actix-web</dt>
+  <dd>A Rust HTTP framework. Same niche as FastAPI / Flask / Express.</dd>
+
+  <dt>async / .await</dt>
+  <dd>Same idea as Python <code>async/await</code>. A function marked <code>async</code> returns a future; <code>.await</code> pauses until it resolves.</dd>
+
+  <dt>Bun</dt>
+  <dd>A drop-in replacement for Node + npm. Used here only to install JS dependencies and run Vite.</dd>
+
+  <dt>cargo</dt>
+  <dd>Rust's package manager and build tool. Combines what <code>pip</code> + <code>build</code> + <code>pytest</code> + <code>tox</code> do.</dd>
+
+  <dt>crate</dt>
+  <dd>The Rust word for a package/library. Listed in <code>Cargo.toml</code>, fetched on <code>cargo build</code>.</dd>
+
+  <dt>derive (<code>#[derive(Serialize)]</code>)</dt>
+  <dd>A Rust attribute that auto-generates boilerplate for a struct — here, the code that turns the struct into JSON.</dd>
+
+  <dt>frontmatter</dt>
+  <dd>The metadata block at the top of a content file, fenced by <code>+++</code> (TOML) or <code>---</code> (YAML). Borrowed from static-site generators.</dd>
+
+  <dt>history API</dt>
+  <dd>Browser API (<code>history.pushState</code>, <code>popstate</code>) that lets JS change the URL without reloading the page. Foundation of every SPA router.</dd>
+
+  <dt>marked</dt>
+  <dd>A small JavaScript markdown parser. Turns <code>"# hi"</code> into <code>"&lt;h1&gt;hi&lt;/h1&gt;"</code>.</dd>
+
+  <dt>middleware (Actix)</dt>
+  <dd>A function that wraps every request before/after the handler runs. Same role as FastAPI middleware.</dd>
+
+  <dt>props</dt>
+  <dd>Inputs passed into a component from its parent. Same word, same meaning as in React/Vue.</dd>
+
+  <dt>Result&lt;T, E&gt;</dt>
+  <dd>Rust's "either a success value of type T or an error of type E." Python equivalent: try/except, but the success/error split is explicit in the type signature.</dd>
+
+  <dt>runes (<code>$state</code>, <code>$props</code>, <code>$derived</code>)</dt>
+  <dd>Svelte 5's reactivity primitives. They look like function calls but are recognized by the compiler.</dd>
+
+  <dt>serde</dt>
+  <dd>Rust's de-facto serialization library. Converts structs ↔ JSON, TOML, etc. Mental model: Pydantic + json.dumps in one.</dd>
+
+  <dt>slug</dt>
+  <dd>The URL-safe identifier for a page. Here, the filename minus <code>.md</code>.</dd>
+
+  <dt>SPA</dt>
+  <dd>Single-Page Application. The server hands over one HTML file once; thereafter JS swaps content in place.</dd>
+
+  <dt>SPA fallback</dt>
+  <dd>The trick of returning <code>index.html</code> for any unknown URL so the JS router can handle it. Needed because the JS doesn't run if the server returns 404 first.</dd>
+
+  <dt>Svelte</dt>
+  <dd>A JS UI framework whose distinguishing feature is that components compile down to small, framework-less JS. No virtual DOM.</dd>
+
+  <dt>TOML</dt>
+  <dd>A small config-file format. Used for both Rust's <code>Cargo.toml</code> and the page frontmatter.</dd>
+
+  <dt>Vite</dt>
+  <dd>The build tool that compiles Svelte components into a JS bundle. Equivalent role to webpack or Parcel.</dd>
+</dl>
+
+<hr/>
+<p style="color: var(--muted); font-size: .9rem;">
+  Generated for defter. For deeper detail, read <code>concept.txt</code> (vision), <code>README.md</code> (how to run), <code>STATUS.md</code> (what's done / next).
+</p>
+
+</main>
+</body>
+</html>

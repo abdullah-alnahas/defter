@@ -1,12 +1,20 @@
 <!doctype html>
-<html lang="en">
+<html lang="%LANG%" dir="%DIR%">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Abdullah</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>%TITLE%</title>
+    <meta name="description" content="%DESCRIPTION%" />
+    <link rel="canonical" href="%CANONICAL%" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="%TITLE%" />
+    <meta property="og:description" content="%DESCRIPTION%" />
+    <meta property="og:url" content="%CANONICAL%" />
+    <meta name="twitter:card" content="summary" />
+    <script type="module" src="/src/main.js"></script>
   </head>
   <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.js"></script>
+    <div id="app"><!--ssr-outlet--></div>
+    <script>window.__DEFTER__=%DATA%;</script>
   </body>
 </html>

@@ -2,28 +2,31 @@
   let { title, dir = 'ltr', lang = 'en', children } = $props();
 </script>
 
-<article {dir} {lang}>
-  <header class="opening" lang="ar" dir="rtl">
-    <p>بسم الله الرحمن الرحيم</p>
-    <p>الحمد لله رب العالمين</p>
-    <p>وأفضل الصلاة وأتم التسليم على سيدنا محمد وعلى آله وصحبه أجمعين</p>
-  </header>
+<main>
+  <article {dir} {lang}>
+    <header class="opening" lang="ar" dir="rtl">
+      <p>بسم الله الرحمن الرحيم</p>
+      <p>الحمد لله رب العالمين</p>
+      <p>وأفضل الصلاة وأتم التسليم على سيدنا محمد وعلى آله وصحبه أجمعين</p>
+    </header>
 
-  {#if title}
-    <h1>{title}</h1>
-  {/if}
+    {#if title}
+      <h1>{title}</h1>
+    {/if}
 
-  <section class="body">
-    {@render children?.()}
-  </section>
+    <section class="body">
+      {@render children?.()}
+    </section>
 
-  <footer class="closing" lang="ar" dir="rtl">
-    <p>وصلى الله على سيدنا محمد وعلى آله وصحبه أجمعين</p>
-    <p>والحمد لله رب العالمين</p>
-  </footer>
-</article>
+    <footer class="closing" lang="ar" dir="rtl">
+      <p>وصلى الله على سيدنا محمد وعلى آله وصحبه أجمعين</p>
+      <p>والحمد لله رب العالمين</p>
+    </footer>
+  </article>
+</main>
 
 <style>
+  main { display: block; }
   article {
     max-width: var(--measure);
     margin: 4rem auto;

@@ -1,7 +1,19 @@
+use pulldown_cmark::{html, Options, Parser};
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
+
+fn render_markdown(src: &str) -> String {
+    let mut opts = Options::empty();
+    opts.insert(Options::ENABLE_TABLES);
+    opts.insert(Options::ENABLE_STRIKETHROUGH);
+    opts.insert(Options::ENABLE_SMART_PUNCTUATION);
+    let parser = Parser::new_ext(src, opts);
+    let mut out = String::with_capacity(src.len() + src.len() / 4);
+    html::push_html(&mut out, parser);
+    out
+}
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Frontmatter {
@@ -64,7 +76,7 @@ fn parse(slug: String, src: &str) -> Result<Page, PageError> {
     let fm: Frontmatter = toml::from_str(fm_src)?;
     Ok(Page {
         meta: PageMeta { slug, fm },
-        body: body.to_string(),
+        body: render_markdown(body),
     })
 }
 

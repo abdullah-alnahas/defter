@@ -40,7 +40,16 @@ For any page I create in the website editor:
   - Optimized for reading, calm, relaxation, eye comfort, no clutter, no distractors, and a single focus point for the user.
 
 ## Page structure
-Each page necessarily starts with: basmalah, hamd, salawat. Each page ends with: salawat, hamd.
+Each page necessarily starts with: basmalah, hamd, salawat.
+
+Each page necessarily ends with:
+1. The Ayah (rendered with a Quran font from `fonts/`, e.g. `UthmanicHafs_V22.ttf` or `UthmanTN_v2-0.ttf`):
+
+   ﴿سُبْحَانَ رَبِّكَ رَبِّ الْعِزَّةِ عَمَّا يَصِفُونَ * وَسَلَامٌ عَلَى الْمُرْسَلِينَ * وَالْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ﴾
+
+2. The Ibrahimi salawat, with the honorific "سيدنا" placed before each mention of Prophet Muhammad ﷺ and Prophet Ibrahim عليه السلام:
+
+   اللّهُمَّ صَلِّ على سيِّدِنا مُحمَّدٍ وعلى آلِ سيِّدِنا مُحمَّدٍ، كَما صَلَّيْتَ على سيِّدِنا إبراهيمَ وعلى آلِ سيِّدِنا إبراهيمَ، إنَّكَ حَميدٌ مَجيدٌ. اللّهُمَّ بارِكْ على سيِّدِنا مُحمَّدٍ وعلى آلِ سيِّدِنا مُحمَّدٍ، كَما بارَكْتَ على سيِّدِنا إبراهيمَ وعلى آلِ سيِّدِنا إبراهيمَ، إنَّكَ حَميدٌ مَجيدٌ.
 
 ## Languages and direction
 Blogs should support Arabic, Turkish, and English by default. A title, paragraph, or other element may use any mix of these. The website should support both RTL and LTR. Insha'Allah!
@@ -58,6 +67,15 @@ When creating a blog post, I would like to choose between different elements:
 - ai.txt
 - llm.txt
 - etc.
+
+## Quality bar
+The website must achieve a Lighthouse score of 100 in all four categories — Performance, Accessibility, Best Practices, SEO — on every page. Treat this as a hard constraint, not an aspiration. Concrete implications:
+- Static prerender per page so initial HTML carries full content, correct `<title>`, `<meta description>`, `<html lang>` and `dir` — no blank SPA shell.
+- Every hover-revealed control (navbar, section nav, TL;DR) must have a keyboard-equivalent (focus-visible, skip links).
+- Color tokens must satisfy WCAG AA contrast (≥ 4.5:1 body, ≥ 3:1 large text and UI components) across every theme variant.
+- Images carry explicit width/height, modern format, lazy loading below the fold.
+- Per-page Open Graph / Twitter card meta; sitemap + robots.txt served at root.
+- No console errors, no deprecated APIs, no render-blocking third-party scripts.
 
 وصلى الله على سيدنا محمد وعلى آله وصحبه أجمعين
 والحمد لله رب العالمين

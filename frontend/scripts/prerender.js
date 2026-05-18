@@ -1,0 +1,163 @@
+import { createServer } from 'vite';
+import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { marked } from 'marked';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const frontendRoot = path.resolve(__dirname, '..');
+const projectRoot = path.resolve(frontendRoot, '..');
+const contentDir = path.join(projectRoot, 'content');
+const distDir = path.join(frontendRoot, 'dist');
+const SITE_ORIGIN = process.env.SITE_ORIGIN || 'http://127.0.0.1:8787';
+
+const escapeHtml = (s) =>
+  String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const escapeJson = (v) => JSON.stringify(v).replace(/</g, '\\u003c').replace(/-->/g, '--\\>');
+
+function parseFrontmatter(raw) {
+  const m = raw.match(/^\+\+\+\r?\n([\s\S]*?)\r?\n\+\+\+\r?\n?([\s\S]*)$/);
+  if (!m) throw new Error('Missing TOML frontmatter');
+  const meta = {};
+  for (const line of m[1].split(/\r?\n/)) {
+    const kv = line.match(/^\s*(\w+)\s*=\s*"(.*)"\s*$/);
+    if (kv) meta[kv[1]] = kv[2];
+  }
+  return { meta, body: m[2] };
+}
+
+function extractDescription(body, fallback = '') {
+  const para = body
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/^#+\s+.*$/gm, '')
+    .replace(/[*_`~]/g, '')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean)[0] || fallback;
+  return para.replace(/\s+/g, ' ').slice(0, 160).trim();
+}
+
+async function loadContent() {
+  const files = (await readdir(contentDir)).filter((f) => f.endsWith('.md'));
+  const pages = [];
+  for (const f of files) {
+    const slug = f.replace(/\.md$/, '');
+    const raw = await readFile(path.join(contentDir, f), 'utf8');
+    const { meta, body } = parseFrontmatter(raw);
+    pages.push({
+      slug,
+      title: meta.title,
+      lang: meta.lang,
+      dir: meta.dir,
+      date: meta.date,
+      bodyMarkdown: body,
+      body: marked.parse(body),
+    });
+  }
+  pages.sort((a, b) => (a.date < b.date ? 1 : -1));
+  return pages;
+}
+
+const stripBody = ({ body, bodyMarkdown, ...rest }) => rest;
+const stripMarkdown = ({ bodyMarkdown, ...rest }) => rest;
+
+function fill(template, { lang, dir, title, description, canonical, data, body }) {
+  return template
+    .replace(/%LANG%/g, escapeHtml(lang))
+    .replace(/%DIR%/g, escapeHtml(dir))
+    .replace(/%TITLE%/g, escapeHtml(title))
+    .replace(/%DESCRIPTION%/g, escapeHtml(description))
+    .replace(/%CANONICAL%/g, escapeHtml(canonical))
+    .replace(/%DATA%/g, escapeJson(data))
+    .replace('<!--ssr-outlet-->', body);
+}
+
+async function main() {
+  const pages = await loadContent();
+  if (pages.length === 0) {
+    console.error('No content found in', contentDir);
+    process.exit(1);
+  }
+
+  const template = await readFile(path.join(distDir, 'index.html'), 'utf8');
+
+  const vite = await createServer({
+    root: frontendRoot,
+    server: { middlewareMode: true, hmr: false },
+    appType: 'custom',
+    logLevel: 'error',
+  });
+
+  const { render } = await vite.ssrLoadModule('svelte/server');
+  const { default: App } = await vite.ssrLoadModule('/src/App.svelte');
+  const router = await vite.ssrLoadModule('/src/lib/router.svelte.js');
+
+  // ----- Index route -----
+  router.setPath('/');
+  const indexData = { pages: pages.map(stripBody) };
+  const { body: indexBody } = render(App, { props: { data: indexData } });
+  await writeFile(
+    path.join(distDir, 'index.html'),
+    fill(template, {
+      lang: 'en',
+      dir: 'ltr',
+      title: 'defter — دفتر',
+      description: 'A personal notebook. Blog posts, projects, and notes.',
+      canonical: SITE_ORIGIN + '/',
+      data: indexData,
+      body: indexBody,
+    })
+  );
+  console.log('rendered /');
+
+  // ----- Per-page routes -----
+  for (const p of pages) {
+    const route = `/p/${p.slug}`;
+    router.setPath(route);
+    const data = { page: stripMarkdown(p) };
+    const { body } = render(App, { props: { data } });
+    const description = extractDescription(p.bodyMarkdown, p.title);
+    const outDir = path.join(distDir, 'p', p.slug);
+    await mkdir(outDir, { recursive: true });
+    await writeFile(
+      path.join(outDir, 'index.html'),
+      fill(template, {
+        lang: p.lang,
+        dir: p.dir,
+        title: `${p.title} — defter`,
+        description,
+        canonical: SITE_ORIGIN + route,
+        data,
+        body,
+      })
+    );
+    console.log(`rendered ${route}`);
+  }
+
+  // ----- sitemap.xml -----
+  const today = new Date().toISOString().slice(0, 10);
+  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>${SITE_ORIGIN}/</loc><lastmod>${today}</lastmod></url>
+${pages.map((p) => `  <url><loc>${SITE_ORIGIN}/p/${p.slug}</loc><lastmod>${p.date}</lastmod></url>`).join('\n')}
+</urlset>
+`;
+  await writeFile(path.join(distDir, 'sitemap.xml'), sitemap);
+  console.log('wrote sitemap.xml');
+
+  const robots = `User-agent: *
+Allow: /
+
+Sitemap: ${SITE_ORIGIN}/sitemap.xml
+`;
+  await writeFile(path.join(distDir, 'robots.txt'), robots);
+  console.log('wrote robots.txt');
+
+  await vite.close();
+}
+
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

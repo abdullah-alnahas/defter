@@ -37,6 +37,17 @@ async fn get_page(slug: web::Path<String>) -> impl Responder {
     }
 }
 
+#[get("/p/{slug}")]
+async fn page_html(slug: web::Path<String>) -> actix_web::Result<NamedFile> {
+    if slug.contains('/') || slug.contains("..") || slug.is_empty() {
+        return Err(actix_web::error::ErrorNotFound(""));
+    }
+    let prerendered = dist_dir().join("p").join(slug.as_str()).join("index.html");
+    let fallback = dist_dir().join("index.html");
+    let path = if prerendered.is_file() { prerendered } else { fallback };
+    Ok(NamedFile::open_async(&path).await?)
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     let dist = dist_dir();
@@ -47,6 +58,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .service(list_pages)
             .service(get_page)
+            .service(page_html)
             .service(
                 Files::new("/", &dist)
                     .index_file("index.html")

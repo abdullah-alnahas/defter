@@ -1,30 +1,51 @@
 <script>
-  import { marked } from 'marked';
   import Page from '../lib/Page.svelte';
 
-  let { slug } = $props();
+  let { slug, initial = null } = $props();
 
-  let pagePromise = $derived(
-    fetch(`/api/pages/${slug}`).then((r) => {
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      return r.json();
-    })
+  let fetched = $state(null);
+  let fetchedSlug = $state(null);
+  let error = $state(null);
+
+  let page = $derived(
+    initial && initial.slug === slug ? initial : fetchedSlug === slug ? fetched : null
   );
+
+  $effect(() => {
+    if (initial && initial.slug === slug) return;
+    if (fetchedSlug === slug && fetched) return;
+    const requested = slug;
+    error = null;
+    fetch(`/api/pages/${requested}`)
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then((p) => {
+        if (slug === requested) {
+          fetched = p;
+          fetchedSlug = requested;
+        }
+      })
+      .catch((e) => {
+        if (slug === requested) error = e.message;
+      });
+  });
 </script>
 
-{#await pagePromise}
+{#if error}
+  <Page title="Not found" dir="ltr" lang="en">
+    <p class="muted">{error}</p>
+  </Page>
+{:else if !page}
   <Page title="" dir="ltr" lang="en">
     <p class="muted">Loading…</p>
   </Page>
-{:then p}
-  <Page title={p.title} dir={p.dir} lang={p.lang}>
-    {@html marked.parse(p.body)}
+{:else}
+  <Page title={page.title} dir={page.dir} lang={page.lang}>
+    {@html page.body}
   </Page>
-{:catch err}
-  <Page title="Not found" dir="ltr" lang="en">
-    <p class="muted">{err.message}</p>
-  </Page>
-{/await}
+{/if}
 
 <style>
   .muted { color: var(--muted); }
