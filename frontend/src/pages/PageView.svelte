@@ -3,6 +3,16 @@
 
   let { slug, initial = null } = $props();
 
+  function deriveHeadings(html) {
+    if (!html) return [];
+    const pattern = /<h([23])\s+id="([^"]+)"[^>]*>([\s\S]*?)<\/h\1>/g;
+    return [...html.matchAll(pattern)].map((g) => ({
+      level: parseInt(g[1], 10),
+      id: g[2],
+      text: g[3].replace(/<[^>]+>/g, '').trim(),
+    }));
+  }
+
   let fetched = $state(null);
   let fetchedSlug = $state(null);
   let error = $state(null);
@@ -42,7 +52,7 @@
     <p class="muted">Loading…</p>
   </Page>
 {:else}
-  <Page title={page.title} dir={page.dir} lang={page.lang} tldr={page.tldr ?? null}>
+  <Page title={page.title} dir={page.dir} lang={page.lang} tldr={page.tldr ?? null} headings={page.headings ?? deriveHeadings(page.body)}>
     {@html page.body}
   </Page>
 {/if}

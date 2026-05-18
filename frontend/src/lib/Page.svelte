@@ -1,7 +1,10 @@
 <script>
-  let { title, dir = 'ltr', lang = 'en', tldr = null, children } = $props();
+  import SectionNav from './SectionNav.svelte';
+  let { title, dir = 'ltr', lang = 'en', tldr = null, headings = [], children } = $props();
   let open = $state(false);
 </script>
+
+<SectionNav {headings} />
 
 <main id="main-content">
   <article {dir} {lang}>

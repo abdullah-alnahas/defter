@@ -5,7 +5,7 @@
 ## Stack
 
 - **Backend:** Rust + `actix-web` 4, `actix-files` 0.6, `serde`, `toml` 0.8, `pulldown-cmark` 0.12 (server-side Markdown → HTML; tables + strikethrough + smart-punct + footnotes enabled). Release: LTO + `strip`.
-- **Frontend:** Svelte 5 (runes), Vite 6, Bun lockfile. Zero client runtime deps (`marked` + `marked-footnote` are devDeps only — used by prerender script).
+- **Frontend:** Svelte 5 (runes), Vite 6, Bun lockfile. Zero client runtime deps (`marked`, `marked-footnote`, `marked-gfm-heading-id` are devDeps only — used by prerender script).
 - **Content:** filesystem `content/*.md`, TOML frontmatter (`title`, `lang`, `dir`, `date`, optional `tldr`). Slug = filename stem.
 - **Runtime:** backend reads filesystem per request (no cache). Binds `127.0.0.1:8787`. Serves `frontend/dist/` (prerendered HTML per route, hashed JS/CSS assets, `sitemap.xml`, `robots.txt`). `/p/{slug}` resolves to `dist/p/{slug}/index.html`; missing slug falls back to SPA shell.
 
@@ -23,11 +23,12 @@ frontend/src/app.css              theme tokens: `:root` static (--measure, --ser
 frontend/src/lib/Page.svelte      <main id="main-content"> + mandatory basmalah/hamd/salawat wrapper
 frontend/src/lib/ThemeToggle.svelte  top-right hover-revealed light↔dark toggle (writes localStorage, updates dataset.theme)
 frontend/src/lib/Nav.svelte       top hover-zone hidden navbar (Blog / Featured / CV / GitHub / LinkedIn / RSS) + skip-link
+frontend/src/lib/SectionNav.svelte left-edge hover-zone hidden in-page TOC (h2/h3); threshold ≥ 2 headings
 frontend/src/lib/router.svelte.js ~15 line history-API router + setPath() for SSR
 frontend/src/lib/Link.svelte      client-side <a>, intercepts plain clicks
 frontend/src/pages/IndexPage.svelte  list pages (initial prop → SSR; falls back to fetch)
 frontend/src/pages/PageView.svelte   one page (initial prop → SSR; body is server-rendered HTML, no marked on client)
-content/*.md                      sample pages (al-bidaya AR/RTL, on-reading-slowly EN/LTR, footnotes-demo EN/LTR)
+content/*.md                      sample pages (al-bidaya AR/RTL, on-reading-slowly EN/LTR, footnotes-demo EN/LTR, long-form-demo EN/LTR with h2/h3 sections)
 ```
 
 ## API
@@ -71,7 +72,7 @@ content/*.md                      sample pages (al-bidaya AR/RTL, on-reading-slo
 - [x] Hidden top navbar — `lib/Nav.svelte`. Top 2.5rem hover-zone. Nav fades + slides in on `:hover` / `:focus-within`. Links: Blog (`/`), Featured (`/featured` — 404 pending), CV (`/p/cv` — 404 pending), GitHub (external, placeholder URL — replace with real handle), LinkedIn (external, placeholder URL), RSS (`/rss.xml`). Skip-link (`Skip to content` → `#main-content`) visible on focus. RTL-aware via logical properties. `pointer-events: none` when hidden so it can't intercept clicks. Keyboard a11y: focus-visible reveals, Tab walks links.
 - [ ] Replace placeholder GitHub / LinkedIn URLs with real handles.
 - [ ] Featured view — single centered column of project cards (description, external link, internal link).
-- [ ] Hidden left section navigator (reveal on hover) for in-page TOC.
+- [x] Hidden left section navigator — `lib/SectionNav.svelte`. Fixed left 1.5rem hover-zone; nav slides in (translateX) + fades on `:hover` / `:focus-within`. Lists every h2/h3 from the rendered body (extracted by prerender via `extractHeadings()` after marked applies `marked-gfm-heading-id`). Threshold ≥ 2 headings; short pages render nothing. RTL-aware. Hidden on viewports < 60rem (defer mobile affordance). PageView falls back to client-side `deriveHeadings()` from the body HTML when arriving via `/api/pages/{slug}` (which doesn't include `headings`).
 - [x] TL;DR button per published page (hidden, reveal on hover) — optional `tldr` frontmatter field (parsed by Rust `Frontmatter` as `Option<String>`, by prerender as `meta.tldr || undefined`). `Page.svelte` renders a small TL;DR button next to the h1, opacity 0.35 by default → 1 on `.title-row:hover` / button hover / focus / `aria-expanded=true`. Click toggles an `<aside class="tldr-card">` above the body. Button absent entirely when frontmatter omits `tldr`. `aria-expanded` + `aria-controls` for screen readers.
 
 ### Theming

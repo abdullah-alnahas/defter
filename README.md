@@ -25,6 +25,7 @@ frontend/        Vite + Svelte SPA
     lib/Page.svelte      mandatory basmalah/hamd/salawat scaffolding + closing Ayah + Ibrahimi salawat
     lib/ThemeToggle.svelte  top-right hover-revealed light↔dark toggle
     lib/Nav.svelte       top hidden navbar (Blog / Featured / CV / GitHub / LinkedIn / RSS) + skip-link
+    lib/SectionNav.svelte left-edge hover-revealed in-page TOC (h2/h3 from rendered body)
     lib/router.svelte.js minimal history-API router
     lib/Link.svelte      client-side <a>
     pages/               IndexPage, PageView

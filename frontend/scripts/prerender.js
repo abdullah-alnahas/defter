@@ -4,8 +4,23 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { marked } from 'marked';
 import markedFootnote from 'marked-footnote';
+import { gfmHeadingId } from 'marked-gfm-heading-id';
 
+marked.use(gfmHeadingId());
 marked.use(markedFootnote());
+
+function extractHeadings(html) {
+  const out = [];
+  const re = /<h([23])\s+id="([^"]+)"[^>]*>([\s\S]*?)<\/h\1>/g;
+  let m;
+  while ((m = re.exec(html)) !== null) {
+    const level = parseInt(m[1], 10);
+    const id = m[2];
+    const text = m[3].replace(/<[^>]+>/g, '').trim();
+    out.push({ level, id, text });
+  }
+  return out;
+}
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const frontendRoot = path.resolve(__dirname, '..');
@@ -68,6 +83,7 @@ async function loadContent() {
     const slug = f.replace(/\.md$/, '');
     const raw = await readFile(path.join(contentDir, f), 'utf8');
     const { meta, body } = parseFrontmatter(raw);
+    const parsedHtml = injectSidenotes(marked.parse(body));
     pages.push({
       slug,
       title: meta.title,
@@ -76,7 +92,8 @@ async function loadContent() {
       date: meta.date,
       tldr: meta.tldr || undefined,
       bodyMarkdown: body,
-      body: injectSidenotes(marked.parse(body)),
+      body: parsedHtml,
+      headings: extractHeadings(parsedHtml),
     });
   }
   pages.sort((a, b) => (a.date < b.date ? 1 : -1));
