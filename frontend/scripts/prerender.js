@@ -185,6 +185,25 @@ async function main() {
   );
   console.log('rendered /featured');
 
+  // ----- CV route (special: Svelte page, not from markdown) -----
+  router.setPath('/p/cv');
+  const cvData = {};
+  const { body: cvBody } = render(App, { props: { data: cvData } });
+  await mkdir(path.join(distDir, 'p', 'cv'), { recursive: true });
+  await writeFile(
+    path.join(distDir, 'p', 'cv', 'index.html'),
+    fill(template, {
+      lang: 'en',
+      dir: 'ltr',
+      title: 'CV — defter',
+      description: 'CV — profile, roles, projects, publications, education.',
+      canonical: SITE_ORIGIN + '/p/cv',
+      data: cvData,
+      body: cvBody,
+    })
+  );
+  console.log('rendered /p/cv');
+
   // ----- Per-page routes -----
   for (const p of pages) {
     const route = `/p/${p.slug}`;
@@ -215,6 +234,7 @@ async function main() {
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>${SITE_ORIGIN}/</loc><lastmod>${today}</lastmod></url>
   <url><loc>${SITE_ORIGIN}/featured</loc><lastmod>${today}</lastmod></url>
+  <url><loc>${SITE_ORIGIN}/p/cv</loc><lastmod>${today}</lastmod></url>
 ${pages.map((p) => `  <url><loc>${SITE_ORIGIN}/p/${p.slug}</loc><lastmod>${p.date}</lastmod></url>`).join('\n')}
 </urlset>
 `;

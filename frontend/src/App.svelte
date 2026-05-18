@@ -4,6 +4,7 @@
   import IndexPage from './pages/IndexPage.svelte';
   import PageView from './pages/PageView.svelte';
   import FeaturedPage from './pages/FeaturedPage.svelte';
+  import CvPage from './pages/CvPage.svelte';
   import ThemeToggle from './lib/ThemeToggle.svelte';
   import Nav from './lib/Nav.svelte';
 
@@ -13,11 +14,14 @@
     router.path.startsWith('/p/') ? router.path.slice(3) : null
   );
   let isFeatured = $derived(router.path === '/featured');
+  let isCv = $derived(slug === 'cv');
 </script>
 
 <Nav />
 
-{#if slug}
+{#if isCv}
+  <CvPage />
+{:else if slug}
   <PageView {slug} initial={data.page} />
 {:else if isFeatured}
   <FeaturedPage initial={data.pages} />

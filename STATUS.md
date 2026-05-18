@@ -104,7 +104,7 @@ content/*.md                      sample pages (al-bidaya AR/RTL, on-reading-slo
 - [x] Mobile tap-triggered inline expansion — on narrow viewports (< 70rem) the same `.pinned` toggle renders the sidenote as a static inline block under the ref (padded, rule-tinted card). Same handler, different CSS rules per viewport.
 
 ### Page types
-- [ ] CV page (arbitrary code, single page).
+- [x] CV page (arbitrary Svelte component, not from markdown) — `pages/CvPage.svelte` is a placeholder structure; App.svelte routes `/p/cv` to it; prerender emits `dist/p/cv/index.html`. Sitemap includes `/p/cv`. Replace placeholder content with real CV (or wire to structured data) when ready.
 - [ ] App page concept — backend+frontend or frontend-only sub-apps.
 - [ ] Blog post standardized design (separate from arbitrary app pages).
 
