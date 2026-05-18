@@ -24,6 +24,7 @@ frontend/        Vite + Svelte SPA
     app.css              theme tokens (`[data-theme=light|dark]`), @font-face for UthmanTN
     lib/Page.svelte      mandatory basmalah/hamd/salawat scaffolding + closing Ayah + Ibrahimi salawat
     lib/ThemeToggle.svelte  top-right hover-revealed light↔dark toggle
+    lib/Nav.svelte       top hidden navbar (Blog / Featured / CV / GitHub / LinkedIn / RSS) + skip-link
     lib/router.svelte.js minimal history-API router
     lib/Link.svelte      client-side <a>
     pages/               IndexPage, PageView
@@ -76,8 +77,8 @@ make clean         # nuke dist, node_modules, target
 
 **Iter 3 (done):** SSR prerender pipeline (every route emits static `.html` with full content baked in). Per-page `<title>` / meta / OG / Twitter. Sitemap + robots. Markdown → HTML moved to backend (`pulldown-cmark`). Lighthouse 100 (mobile + desktop, all four categories) on every prerendered route.
 
-**Iter 4 (done):** Closing-Ayah convention — UthmanTN Quran font subset (woff2, preloaded). `Page.svelte` closing now renders the Ayah in Quran font + full Ibrahimi salawat with سيدنا. SEO trio: RSS feed (`/rss.xml`), `ai.txt`, `llm.txt`. Dark theme variant + system-pref auto-detect (no FOUC) + top-right hover-revealed light↔dark toggle with `localStorage` persistence.
+**Iter 4 (done):** Closing-Ayah convention — UthmanTN Quran font subset (woff2, preloaded). `Page.svelte` closing now renders the Ayah in Quran font + full Ibrahimi salawat with سيدنا. SEO trio: RSS feed (`/rss.xml`), `ai.txt`, `llm.txt`. Dark theme variant + system-pref auto-detect (no FOUC) + top-right hover-revealed light↔dark toggle with `localStorage` persistence. Top hover-revealed navbar (Blog / Featured / CV / GitHub / LinkedIn / RSS) with keyboard skip-link.
 
-**Not yet:** navbar (hidden until hover), Featured view, section nav, TL;DR, multi-theme, footnote sidenotes, exec code blocks, Ayah/Hadith elements, page editor, CV, app pages, persistence beyond filesystem, multilingual mixing within a single element.
+**Not yet:** Featured view, section nav, TL;DR, multi-theme, footnote sidenotes, exec code blocks, Ayah/Hadith elements, page editor, CV, app pages, persistence beyond filesystem, multilingual mixing within a single element.
 
 See `STATUS.md` for the full per-area breakdown.

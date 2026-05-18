@@ -20,8 +20,9 @@ frontend/scripts/prerender.js     vite SSR + svelte/server.render(); emits dist/
 frontend/src/main.js              hydrate() when prerendered children present, else mount(); reads window.__DEFTER__
 frontend/src/App.svelte           accepts data prop; router switch (path /p/{slug} → PageView, else IndexPage)
 frontend/src/app.css              theme tokens: `:root` static (--measure, --serif, --arabic, --quran), `[data-theme=light|dark]` variable (--bg, --fg, --muted, --rule); @font-face for UthmanTN
-frontend/src/lib/Page.svelte      <main> + mandatory basmalah/hamd/salawat wrapper
+frontend/src/lib/Page.svelte      <main id="main-content"> + mandatory basmalah/hamd/salawat wrapper
 frontend/src/lib/ThemeToggle.svelte  top-right hover-revealed light↔dark toggle (writes localStorage, updates dataset.theme)
+frontend/src/lib/Nav.svelte       top hover-zone hidden navbar (Blog / Featured / CV / GitHub / LinkedIn / RSS) + skip-link
 frontend/src/lib/router.svelte.js ~15 line history-API router + setPath() for SSR
 frontend/src/lib/Link.svelte      client-side <a>, intercepts plain clicks
 frontend/src/pages/IndexPage.svelte  list pages (initial prop → SSR; falls back to fetch)
@@ -67,7 +68,8 @@ content/*.md                      sample pages (al-bidaya AR/RTL, on-reading-slo
 ## TODO
 
 ### Navigation
-- [ ] Hidden top navbar (reveal on hover): CV, Blog, GitHub, LinkedIn, RSS, Featured.
+- [x] Hidden top navbar — `lib/Nav.svelte`. Top 2.5rem hover-zone. Nav fades + slides in on `:hover` / `:focus-within`. Links: Blog (`/`), Featured (`/featured` — 404 pending), CV (`/p/cv` — 404 pending), GitHub (external, placeholder URL — replace with real handle), LinkedIn (external, placeholder URL), RSS (`/rss.xml`). Skip-link (`Skip to content` → `#main-content`) visible on focus. RTL-aware via logical properties. `pointer-events: none` when hidden so it can't intercept clicks. Keyboard a11y: focus-visible reveals, Tab walks links.
+- [ ] Replace placeholder GitHub / LinkedIn URLs with real handles.
 - [ ] Featured view — single centered column of project cards (description, external link, internal link).
 - [ ] Hidden left section navigator (reveal on hover) for in-page TOC.
 - [ ] TL;DR button per published page (hidden, reveal on hover).

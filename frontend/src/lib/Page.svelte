@@ -2,7 +2,7 @@
   let { title, dir = 'ltr', lang = 'en', children } = $props();
 </script>
 
-<main>
+<main id="main-content">
   <article {dir} {lang}>
     <header class="opening" lang="ar" dir="rtl">
       <p>بسم الله الرحمن الرحيم</p>
