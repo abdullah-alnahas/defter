@@ -24,8 +24,10 @@ Everything on the website is conceptually a "page." A page can be:
 Blog pages would follow a standardized design. App pages and the CV page would be arbitrary code.
 
 ## Tech stack
-- Backend: Rust
-- Frontend: Svelte
+- SvelteKit + Svelte 5 (runes), `adapter-static` — pure prerender, no server runtime in production. One toolchain, one language.
+- Markdown pipeline: `marked` + `marked-footnote` + `marked-gfm-heading-id`, executed at build time inside `+page.server.js` loaders.
+- Bun for install + script runner; Vite under the hood (SvelteKit's bundler).
+- Future "app pages" (concept below) may bring back a backend per-app (Rust, Python, whatever fits), but the blog/CV/static surface does not need one.
 
 ## Page editor features
 For any page I create in the website editor:
@@ -52,7 +54,13 @@ Each page necessarily ends with:
    اللّهُمَّ صَلِّ على سيِّدِنا مُحمَّدٍ وعلى آلِ سيِّدِنا مُحمَّدٍ، كَما صَلَّيْتَ على سيِّدِنا إبراهيمَ وعلى آلِ سيِّدِنا إبراهيمَ، إنَّكَ حَميدٌ مَجيدٌ. اللّهُمَّ بارِكْ على سيِّدِنا مُحمَّدٍ وعلى آلِ سيِّدِنا مُحمَّدٍ، كَما بارَكْتَ على سيِّدِنا إبراهيمَ وعلى آلِ سيِّدِنا إبراهيمَ، إنَّكَ حَميدٌ مَجيدٌ.
 
 ## Footnotes
-Interactive footnotes displayed as contextual sidenotes in the page margins. Sidenotes are hidden by default, appear on hover with a fade transition, disappear on hover out, and can be pinned/unpinned with a click. All footnotes are also rendered as traditional endnotes after the article. On mobile, sidenotes adapt into tap-triggered inline expansions.
+Interactive footnotes. Two interactions, one design:
+
+- **Hover (or keyboard focus) a footnote reference** → an ephemeral preview popover floats next to the ref. Only one preview at a time; moving to another ref replaces it; moving away dismisses it.
+- **Click a reference** → the note is *pinned* into a shared sticky stack in the right margin (the "margin column"). Pinned notes accumulate, sorted by their reference's vertical position in the document, so the stack reads top-to-bottom in document order. Each pin shows an unpin × control; the stack header shows "Pinned (N)" and a "Clear all" button. Pressing `Esc` clears all pins. Pins live in memory only — fresh tab = empty stack.
+- **Same label opened twice** → counts as two separate pins (per-occurrence identity).
+- **Endnote list** is always present after the article body, regardless of pins. This is the canonical reading affordance for assistive tech, print, and feed readers.
+- **Narrow viewports (no room for a margin column)** → no preview popover; clicking the ref toggles an inline expansion immediately under the ref instead.
 
 ## Languages and direction
 Blogs should support Arabic, Turkish, and English by default. A title, paragraph, or other element may use any mix of these. The website should support both RTL and LTR. Insha'Allah!
