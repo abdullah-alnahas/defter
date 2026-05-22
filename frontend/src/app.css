@@ -14,10 +14,8 @@
 
 /* Theme palette × variant. Two axes:
    - [data-theme]      light | dark
-   - [data-theme-name] paper (default) | sepia
-   Selectors default to `paper` when name attr is absent. */
+   - [data-theme-name] paper (default) | sepia */
 
-/* paper · light (also the un-themed default) */
 :root,
 :root[data-theme='light'],
 :root[data-theme-name='paper'],
@@ -27,8 +25,6 @@
   --muted: #5a5a5a;
   --rule: #e6e3dc;
 }
-
-/* paper · dark */
 :root[data-theme='dark'],
 :root[data-theme-name='paper'][data-theme='dark'] {
   --bg: #14130f;
@@ -37,8 +33,6 @@
   --rule: #2c2a25;
   color-scheme: dark;
 }
-
-/* sepia · light */
 :root[data-theme-name='sepia'],
 :root[data-theme-name='sepia'][data-theme='light'] {
   --bg: #f5ecd9;
@@ -46,8 +40,6 @@
   --muted: #6b5640;
   --rule: #d9caa8;
 }
-
-/* sepia · dark */
 :root[data-theme-name='sepia'][data-theme='dark'] {
   --bg: #1f1810;
   --fg: #ecd8b3;
@@ -68,86 +60,168 @@ html, body {
 
 *:lang(ar) { font-family: var(--arabic); }
 
-/* footnote refs (inline) — GFM markup: <sup><a data-footnote-ref>...</a></sup> */
-sup:has(a[data-footnote-ref]) {
+/* ============================================================
+   Footnote refs (inline) — sup.fn-ref wraps GFM <a data-footnote-ref>
+   ============================================================ */
+sup.fn-ref {
   font-size: 0.72em;
   line-height: 0;
   vertical-align: super;
+  cursor: pointer;
 }
-a[data-footnote-ref] {
+sup.fn-ref a[data-footnote-ref] {
   text-decoration: none;
   color: var(--muted);
   padding: 0 0.15em;
 }
-a[data-footnote-ref]:hover,
-a[data-footnote-ref]:focus-visible {
+sup.fn-ref:hover a[data-footnote-ref],
+sup.fn-ref:focus-within a[data-footnote-ref],
+sup.fn-ref.is-active a[data-footnote-ref],
+sup.fn-ref.is-pinned a[data-footnote-ref] {
   color: var(--fg);
   text-decoration: underline;
 }
 
-/* sidenote injected next to ref by prerender */
-.fn-anchor { position: relative; }
-.fn-anchor .sidenote {
-  display: none;
+/* Hover preview popover — single ephemeral slot positioned in fixed coordinates */
+.fn-hover-preview {
+  position: fixed;
+  z-index: 40;
+  max-width: 22rem;
+  padding: 0.6rem 0.8rem;
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  box-shadow: 0 6px 16px -10px rgba(0,0,0,0.4);
+  font-size: 0.88rem;
+  line-height: 1.55;
+  pointer-events: none; /* preview only — interaction goes to pinned stack */
 }
+.fn-hover-preview .sn-num {
+  color: var(--muted);
+  margin-inline-end: 0.35em;
+  font-feature-settings: 'tnum';
+}
+.fn-hover-preview p { margin: 0; display: inline; }
+
+/* Margin stack (right rail) — desktop only */
+.fn-margin-stack {
+  position: fixed;
+  top: 4rem;
+  inset-inline-end: 1.5rem;
+  width: 16rem;
+  max-height: calc(100vh - 8rem);
+  overflow-y: auto;
+  display: none; /* shown via @media below */
+  flex-direction: column;
+  gap: 0.7rem;
+  z-index: 8;
+}
+.fn-margin-stack .fn-stack-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--rule);
+}
+.fn-margin-stack .fn-stack-clear {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 0;
+}
+.fn-margin-stack .fn-stack-clear:hover,
+.fn-margin-stack .fn-stack-clear:focus-visible {
+  color: var(--fg);
+}
+.fn-pin {
+  padding: 0.7rem 0.85rem;
+  background: var(--bg);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--fg);
+  position: relative;
+}
+.fn-pin .fn-pin-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.3rem;
+}
+.fn-pin .sn-num {
+  color: var(--muted);
+  font-feature-settings: 'tnum';
+}
+.fn-pin .fn-pin-unpin {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+  padding: 0 0.2rem;
+}
+.fn-pin .fn-pin-unpin:hover,
+.fn-pin .fn-pin-unpin:focus-visible {
+  color: var(--fg);
+}
+.fn-pin .fn-pin-body p { margin: 0; display: inline; }
+.fn-pin .fn-pin-body a { color: var(--muted); }
+.fn-pin .fn-pin-body a:hover { color: var(--fg); }
+
+/* Mobile inline expansion — rendered next to the ref on narrow viewports */
+.fn-inline {
+  display: block;
+  margin: 0.6rem 0 1.1rem;
+  padding: 0.7rem 0.9rem;
+  background: var(--rule);
+  border-radius: 4px;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--fg);
+}
+.fn-inline .sn-num { font-weight: 600; margin-inline-end: 0.35em; }
+.fn-inline p { margin: 0; display: inline; }
 
 @media (min-width: 70rem) {
-  /* paragraphs become positioning ancestors so the sidenote can hang in the margin */
-  article .body p { position: relative; }
-  .fn-anchor .sidenote {
-    display: block;
-    position: absolute;
-    inset-inline-end: -15.5rem;
-    top: 0;
-    width: 13rem;
-    font-size: 0.82rem;
-    line-height: 1.55;
-    color: var(--muted);
-    text-align: start;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 180ms ease 220ms;
-  }
-  .fn-anchor .sidenote .sn-num {
-    color: var(--fg);
-    margin-inline-end: 0.3em;
-    font-feature-settings: 'tnum';
-  }
-  .fn-anchor .sidenote p { margin: 0; display: inline; }
-  .fn-anchor:hover .sidenote,
-  .fn-anchor:focus-within .sidenote,
-  .fn-anchor .sidenote:hover,
-  .fn-anchor.pinned .sidenote {
-    opacity: 1;
-    pointer-events: auto;
-    transition-delay: 0ms;
-  }
-  .fn-anchor.pinned a[data-footnote-ref] { color: var(--fg); }
+  .fn-margin-stack { display: flex; }
 }
 
-/* mobile / narrow: tap ref → toggle inline expansion under the ref */
-@media (max-width: 69.99rem) {
-  .fn-anchor.pinned .sidenote {
-    display: block;
-    margin: 0.6rem 0 1.1rem;
-    padding: 0.7rem 0.9rem;
-    background: var(--rule);
-    border-radius: 4px;
-    font-size: 0.92rem;
-    line-height: 1.55;
-    color: var(--fg);
-  }
-  .fn-anchor.pinned .sidenote .sn-num { font-weight: 600; margin-inline-end: 0.35em; }
-  .fn-anchor.pinned .sidenote p { margin: 0; display: inline; }
-  .fn-anchor a[data-footnote-ref] { cursor: pointer; }
-  .fn-anchor.pinned a[data-footnote-ref] { color: var(--fg); }
+/* Endnote section */
+.footnotes {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--rule);
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+.footnotes ol { padding-inline-start: 1.5rem; }
+.footnotes li { margin: 0 0 0.75rem; line-height: 1.6; }
+.footnotes li p { margin: 0; display: inline; }
+.footnotes a[href^='#'] { color: var(--muted); }
+.footnotes a[href^='#']:hover,
+.footnotes a[href^='#']:focus-visible { color: var(--fg); }
+.footnotes :target { background: var(--rule); }
+
+/* Print: hide all interactive sidenote surfaces; endnotes remain */
+@media print {
+  .fn-margin-stack, .fn-hover-preview, .fn-inline { display: none !important; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .fn-anchor .sidenote { transition: none; }
-}
-
-/* Executable code block (from ```exec fenced block, sandboxed iframe) */
+/* ============================================================
+   Executable code block (sandboxed iframe)
+   ============================================================ */
 figure.exec {
   margin: 1.8rem 0;
   padding: 0;
@@ -172,7 +246,9 @@ figure.exec figcaption {
   background: var(--bg);
 }
 
-/* Ayah and Hadith block elements (from :::ayah / :::hadith directives) */
+/* ============================================================
+   Ayah / Hadith blocks
+   ============================================================ */
 figure.ayah,
 figure.hadith {
   margin: 2.5rem 0;
@@ -203,19 +279,3 @@ figure.hadith figcaption {
   color: var(--muted);
   letter-spacing: 0.02em;
 }
-
-/* endnote list */
-.footnotes {
-  margin-top: 3rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--rule);
-  color: var(--muted);
-  font-size: 0.92rem;
-}
-.footnotes ol { padding-inline-start: 1.5rem; }
-.footnotes li { margin: 0 0 0.75rem; line-height: 1.6; }
-.footnotes li p { margin: 0; display: inline; }
-.footnotes a[href^='#'] { color: var(--muted); }
-.footnotes a[href^='#']:hover,
-.footnotes a[href^='#']:focus-visible { color: var(--fg); }
-.footnotes :target { background: var(--rule); }

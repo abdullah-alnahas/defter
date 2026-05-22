@@ -2,45 +2,49 @@
 
 دفتر — Turkish/Arabic for "notebook." Personal website.
 
-Vision: see `concept.txt`.
+Vision: see `concept.txt`. Per-iteration status: see `STATUS.md`.
 
 ## Stack
 
-- **Backend:** Rust + actix-web (`backend/`). Markdown → HTML on the server (`pulldown-cmark`).
-- **Frontend:** Svelte 5 + Vite SPA (`frontend/`), built with Bun. SSR-prerendered to static `.html` per route.
-- Backend serves prerendered `frontend/dist/` (HTML, fonts, sitemap, robots, RSS, ai.txt, llm.txt). Unknown routes fall back to SPA shell.
+- **SvelteKit + Svelte 5 (runes)** with `@sveltejs/adapter-static` — pure static prerender, no runtime server in production.
+- **Markdown pipeline** at build time inside `+page.server.js` loaders: `marked` + `marked-footnote` + `marked-gfm-heading-id` + custom preprocessors (`:::ayah`, `:::hadith`, ` ```exec ` fenced blocks, sidenote injector).
+- **Bun** for install + scripts; **Vite** under the hood (SvelteKit's bundler).
+- **No backend.** Output is a static `build/` folder — drop into Nginx, Caddy, Pages, S3+CloudFront, anywhere static.
 
 ## Layout
 
 ```
-backend/         actix-web server (serves SPA + /api/pages + prerendered HTML)
-  src/page.rs            frontmatter parsing + filesystem loader + markdown→HTML
-frontend/        Vite + Svelte SPA
-  index.html             template with %LANG%/%DIR%/%TITLE%/... placeholders, inline theme-init script
-  public/fonts/          subsetted Quran font (UthmanTN, woff2)
-  scripts/prerender.js   SSR build: emits dist/*.html, sitemap.xml, robots.txt, rss.xml, ai.txt, llm.txt
+frontend/
   src/
-    App.svelte           top-level router switch
-    app.css              theme tokens (`[data-theme=light|dark]`), @font-face for UthmanTN
-    lib/Page.svelte      mandatory basmalah/hamd/salawat scaffolding + closing Ayah + Ibrahimi salawat
-    lib/ThemeToggle.svelte  top-right hover-revealed light↔dark toggle
-    lib/Nav.svelte       top hidden navbar (Blog / Featured / CV / GitHub / LinkedIn / RSS) + skip-link
-    lib/SectionNav.svelte left-edge hover-revealed in-page TOC (h2/h3 from rendered body)
-    lib/router.svelte.js minimal history-API router
-    lib/Link.svelte      client-side <a>
-    pages/               IndexPage, PageView
-content/         markdown pages with TOML frontmatter (source of all blog content)
-fonts/           full unsubsetted source fonts (UthmanicHafs, UthmanTN, Besmellah)
-concept.txt      project vision (source of truth)
-STATUS.md        current iteration status, layout, conventions, done/TODO
+    app.html                              template (theme-init script, font preload, RSS link)
+    app.css                               theme tokens + sidenote/exec/ayah styles
+    lib/
+      server/content.js                   filesystem walker, frontmatter parser, marked pipeline, footnote extractor
+      sidenotes.svelte.js                 runes state: hover / pin / unpin / clearPins
+      components/
+        Page.svelte                       mandatory wrapper (basmalah/title/TLDR/body/closing Ayah + Ibrahimi salawat)
+        Nav.svelte                        hover-revealed top navbar + skip-link
+        SectionNav.svelte                 hover-revealed left in-page TOC
+        ThemeToggle.svelte                two-button bar: P/S palette + sun/moon variant
+        Sidenotes.svelte                  hydration: binds events to .fn-ref + mounts MarginNotes
+        MarginNotes.svelte                sticky right rail (pinned stack + hover preview slot)
+    routes/
+      +layout.{js,server.js,svelte}       global prerender, page-list loader, layout shell
+      +page.svelte                        home (Picked / Recent / All)
+      featured/+page.svelte               featured-cards view
+      p/[slug]/{+page.server.js,+page.svelte}   markdown pages (entries() enumerates content/*.md)
+      p/cv/+page.svelte                   CV (Svelte component, not from markdown)
+      rss.xml/+server.js                  RSS 2.0 feed
+      sitemap.xml/+server.js              sitemap
+      robots.txt/+server.js               robots
+      ai.txt/+server.js                   Spawning AI policy
+      llm.txt/+server.js                  LLM-readable site summary
+  static/
+    fonts/UthmanTN-Arabic.woff2           Quran-font Arabic subset (45.5 KB)
+  svelte.config.js                        adapter-static, prerender, $content alias → ../content
+  vite.config.js                          sveltekit() plugin
+content/                                  *.md with TOML frontmatter — source of all blog content
 ```
-
-## API
-
-- `GET /api/pages` → list of page metadata, sorted by date desc
-- `GET /api/pages/{slug}` → full page (metadata + **server-rendered HTML body**)
-- `GET /p/{slug}` → prerendered HTML (falls back to SPA shell if missing)
-- `GET /rss.xml`, `/sitemap.xml`, `/robots.txt`, `/ai.txt`, `/llm.txt` → static files emitted by prerender
 
 ## Authoring a page
 
@@ -49,18 +53,23 @@ Drop a `*.md` file into `content/` with TOML frontmatter:
 ```
 +++
 title = "..."
-lang = "en"     # or ar, tr
-dir  = "ltr"    # or rtl
-date = "2026-05-07"
-tldr = "..."    # optional; renders a hover-revealed TL;DR button next to the title
-featured = true # optional; appears on /featured as a card
-external = "https://..." # optional; external link rendered on the featured card
+lang = "en"      # or ar, tr
+dir  = "ltr"     # or rtl
+date = "2026-05-22"
+tldr = "..."     # optional; renders a hover-revealed TL;DR button
+featured = true  # optional; appears on /featured as a card
+external = "https://..." # optional; external link on the featured card
 +++
 
 Markdown body here.
 ```
 
-Footnotes use standard Markdown syntax: `[^label]` inline ref, `[^label]: ...` definition anywhere in the body. Rendered as superscript refs with hover-revealed margin sidenotes (desktop) or tap-to-expand inline cards (mobile); endnote list always appears at the end of the body.
+Footnotes use standard Markdown syntax: `[^label]` inline ref, `[^label]: ...` definition.
+- Hover (desktop) → ephemeral preview popover near the ref.
+- Click → pin into the right-margin stack (sorted by document position).
+- Multiple pins stack vertically with unpin × per item + "Clear all" header. `Esc` clears all.
+- Narrow viewport: click renders an inline expansion under the ref instead.
+- Endnote list always present at body bottom (a11y / print / readers).
 
 ### Executable JS code blocks
 
@@ -73,7 +82,7 @@ print(2 + 2);
 ```
 ````
 
-The iframe sandbox is `allow-scripts` only. The runtime exposes `print(...)`; thrown errors render in red.
+Sandbox is `allow-scripts` only. Runtime exposes `print(...)`; thrown errors render in red.
 
 ### Ayah / Hadith blocks
 
@@ -89,29 +98,19 @@ The iframe sandbox is `allow-scripts` only. The runtime exposes `print(...)`; th
 
 Both render as bordered figures with `lang="ar" dir="rtl"`. Ayah uses the Quran font; Hadith uses the regular Arabic stack.
 
-Filename (without `.md`) is the slug. No restart needed — backend reads filesystem on every request.
+Filename (without `.md`) is the slug. New file = next build picks it up.
 
 ## Run
 
 ```sh
-make install       # frontend deps (first time)
-make run           # build frontend + run backend → http://127.0.0.1:8787
-make release       # same, optimized backend
-make dev           # frontend HMR only (no backend) → http://localhost:5173
-make build         # frontend production build only
-make clean         # nuke dist, node_modules, target
+make install   # frontend deps (first time)
+make dev       # SvelteKit dev server → http://localhost:5173
+make build     # static prerender → frontend/build/
+make preview   # serve frontend/build/ → http://127.0.0.1:8787
+make run       # alias for preview
+make clean     # nuke build / node_modules / .svelte-kit
 ```
 
-## Iteration status
+## Quality bar
 
-**Iter 1 (done):** Rust+Svelte skeleton, one hardcoded page, mandatory scaffolding, single light theme, RTL/LTR aware.
-
-**Iter 2 (done):** Filesystem-backed pages in `content/*.md` with TOML frontmatter. Backend exposes `/api/pages` + `/api/pages/{slug}`. Frontend has minimal client router, index list, page view with markdown rendering.
-
-**Iter 3 (done):** SSR prerender pipeline (every route emits static `.html` with full content baked in). Per-page `<title>` / meta / OG / Twitter. Sitemap + robots. Markdown → HTML moved to backend (`pulldown-cmark`). Lighthouse 100 (mobile + desktop, all four categories) on every prerendered route.
-
-**Iter 4 (done):** Closing-Ayah convention — UthmanTN Quran font subset (woff2, preloaded). `Page.svelte` closing now renders the Ayah in Quran font + full Ibrahimi salawat with سيدنا. SEO trio: RSS feed (`/rss.xml`), `ai.txt`, `llm.txt`. Dark theme variant + system-pref auto-detect (no FOUC) + top-right hover-revealed light↔dark toggle with `localStorage` persistence. Top hover-revealed navbar (Blog / Featured / CV / GitHub / LinkedIn / RSS) with keyboard skip-link.
-
-**Not yet:** Featured view, section nav, TL;DR, multi-theme, footnote sidenotes, exec code blocks, Ayah/Hadith elements, page editor, CV, app pages, persistence beyond filesystem, multilingual mixing within a single element.
-
-See `STATUS.md` for the full per-area breakdown.
+Lighthouse 100 in Performance, Accessibility, Best Practices, SEO on every route × form-factor (mobile + desktop). Hard constraint, enforced by `.github/workflows/lighthouse.yml` on every push/PR to `main`.

@@ -4,3 +4,4 @@ dist
 .vite
 worktrees/
 .claude/
+.playwright-mcp/

@@ -1,35 +1,27 @@
 <script>
-  import Page from '../lib/Page.svelte';
-  import Link from '../lib/Link.svelte';
-
-  let { initial = null } = $props();
-
-  let fetched = $state(null);
-  let error = $state(null);
-  let pages = $derived(initial ?? fetched);
-  let picked = $derived((pages ?? []).filter((p) => p.featured));
-  let recent = $derived((pages ?? []).slice(0, 3));
-  let all = $derived(pages ?? []);
-
-  $effect(() => {
-    if (initial) return;
-    fetch('/api/pages')
-      .then((r) => r.json())
-      .then((p) => (fetched = p))
-      .catch((e) => (error = e.message));
-  });
-
-  function row(p) {
-    return p;
-  }
+  import Page from '$lib/components/Page.svelte';
+  import { page } from '$app/state';
+  let { data } = $props();
+  const pages = $derived(data.pages);
+  const picked = $derived(pages.filter((p) => p.featured));
+  const recent = $derived(pages.slice(0, 3));
+  const all = $derived(pages);
+  const canonical = $derived(page.url.href);
 </script>
 
+<svelte:head>
+  <title>defter — دفتر</title>
+  <meta name="description" content="A personal notebook. Blog posts, projects, and notes." />
+  <link rel="canonical" href={canonical} />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="defter — دفتر" />
+  <meta property="og:description" content="A personal notebook. Blog posts, projects, and notes." />
+  <meta property="og:url" content={canonical} />
+  <meta name="twitter:card" content="summary" />
+</svelte:head>
+
 <Page title="" dir="ltr" lang="en">
-  {#if error}
-    <p class="muted">Failed to load: {error}</p>
-  {:else if pages === null}
-    <p class="muted">Loading…</p>
-  {:else if pages.length === 0}
+  {#if pages.length === 0}
     <p class="muted">No pages yet.</p>
   {:else}
     {#if picked.length > 0}
@@ -38,7 +30,7 @@
         <ul class="page-list">
           {#each picked as p (p.slug)}
             <li dir={p.dir} lang={p.lang}>
-              <Link to={`/p/${p.slug}`}>{p.title}</Link>
+              <a href={`/p/${p.slug}`}>{p.title}</a>
               <time datetime={p.date}>{p.date}</time>
             </li>
           {/each}
@@ -51,7 +43,7 @@
       <ul class="page-list">
         {#each recent as p (p.slug)}
           <li dir={p.dir} lang={p.lang}>
-            <Link to={`/p/${p.slug}`}>{p.title}</Link>
+            <a href={`/p/${p.slug}`}>{p.title}</a>
             <time datetime={p.date}>{p.date}</time>
           </li>
         {/each}
@@ -64,7 +56,7 @@
         <ul class="page-list">
           {#each all as p (p.slug)}
             <li dir={p.dir} lang={p.lang}>
-              <Link to={`/p/${p.slug}`}>{p.title}</Link>
+              <a href={`/p/${p.slug}`}>{p.title}</a>
               <time datetime={p.date}>{p.date}</time>
             </li>
           {/each}
@@ -95,6 +87,8 @@
     border-bottom: 1px solid var(--rule);
   }
   .page-list li:last-child { border-bottom: none; }
+  .page-list a { color: var(--fg); text-decoration: none; }
+  .page-list a:hover, .page-list a:focus-visible { text-decoration: underline; }
   time { color: var(--muted); font-size: 0.88rem; font-variant-numeric: tabular-nums; }
   .muted { color: var(--muted); }
 </style>

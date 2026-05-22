@@ -100,6 +100,11 @@
     margin: 0 0 2rem;
   }
 
+  /*
+   * Default state stays subtle through *color choice* (muted on bg = 6.4:1, passes AA)
+   * instead of opacity, because opacity-blended text fails axe color-contrast.
+   * Hover/focus brightens to --fg + adds the rule-coloured border.
+   */
   .tldr-btn {
     background: transparent;
     border: 1px solid transparent;
@@ -110,14 +115,12 @@
     padding: 0.2rem 0.55rem;
     cursor: pointer;
     border-radius: 3px;
-    opacity: 0.35;
-    transition: opacity 180ms ease, color 180ms ease, border-color 180ms ease;
+    transition: color 180ms ease, border-color 180ms ease;
     flex: 0 0 auto;
   }
   .title-row:hover .tldr-btn,
   .tldr-btn:hover,
   .tldr-btn:focus-visible {
-    opacity: 1;
     color: var(--fg);
     border-color: var(--rule);
   }
@@ -127,7 +130,6 @@
     border-color: transparent;
   }
   .tldr-btn[aria-expanded='true'] {
-    opacity: 1;
     color: var(--fg);
     border-color: var(--rule);
   }

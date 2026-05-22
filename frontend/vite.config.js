@@ -1,37 +1,27 @@
+import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
-import { svelte } from '@sveltejs/vite-plugin-svelte';
 
-const DEV_DEFAULTS = {
-  LANG: 'en',
-  DIR: 'ltr',
-  TITLE: 'defter (dev)',
-  DESCRIPTION: 'dev mode',
-  CANONICAL: 'http://localhost:5173/',
-  DATA: '{}',
+/**
+ * Preview-server cache headers. SvelteKit hashed assets and our pinned font
+ * are immutable forever; everything else gets a short TTL.
+ */
+const immutableCachePlugin = {
+  name: 'defter-preview-cache-headers',
+  configurePreviewServer(server) {
+    server.middlewares.use((req, res, next) => {
+      const url = req.url || '';
+      if (url.startsWith('/_app/immutable/') || url.startsWith('/fonts/')) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      } else if (url === '/favicon.svg') {
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+      } else {
+        res.setHeader('Cache-Control', 'public, max-age=300');
+      }
+      next();
+    });
+  },
 };
 
 export default defineConfig({
-  plugins: [
-    svelte(),
-    {
-      name: 'defter-placeholders-dev',
-      transformIndexHtml: {
-        order: 'pre',
-        handler(html, ctx) {
-          if (!ctx.server) return html;
-          let out = html;
-          for (const [k, v] of Object.entries(DEV_DEFAULTS)) {
-            out = out.replace(new RegExp(`%${k}%`, 'g'), v);
-          }
-          return out.replace('<!--ssr-outlet-->', '');
-        },
-      },
-    },
-  ],
-  build: { outDir: 'dist', emptyOutDir: true },
-  server: {
-    proxy: {
-      '/api': 'http://127.0.0.1:8787',
-    },
-  },
+  plugins: [sveltekit(), immutableCachePlugin],
 });

@@ -67,6 +67,7 @@
     z-index: 10;
   }
 
+  /* Subtle via colour (muted on bg = 6.4:1, AA-pass), not opacity. */
   .theme-btn {
     width: 2rem;
     height: 2rem;
@@ -78,8 +79,7 @@
     border-radius: 50%;
     color: var(--muted);
     cursor: pointer;
-    opacity: 0.35;
-    transition: opacity 200ms ease, color 200ms ease, border-color 200ms ease, background 200ms ease;
+    transition: color 200ms ease, border-color 200ms ease, background 200ms ease;
     padding: 0;
     font: inherit;
     font-size: 0.78rem;
@@ -88,7 +88,6 @@
   .theme-bar:hover .theme-btn,
   .theme-btn:hover,
   .theme-btn:focus-visible {
-    opacity: 1;
     color: var(--fg);
     border-color: var(--rule);
     background: var(--bg);

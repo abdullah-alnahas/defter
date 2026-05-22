@@ -42,7 +42,6 @@
     transition: opacity 200ms ease, transform 200ms ease, border-color 200ms ease;
     pointer-events: none;
   }
-  /* RTL mirrors translate direction */
   :global([dir='rtl']) .snav { transform: translateX(0.5rem); }
 
   .snav-zone:hover .snav,
@@ -69,15 +68,9 @@
     display: block;
     padding: 0.1rem 0;
   }
-  a:hover, a:focus-visible {
-    color: var(--fg);
-  }
-  a:focus-visible {
-    outline: 2px solid var(--fg);
-    outline-offset: 2px;
-  }
+  a:hover, a:focus-visible { color: var(--fg); }
+  a:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
 
-  /* hide on narrow viewports — endnote-style affordance not yet built for mobile section nav */
   @media (max-width: 60rem) {
     .snav-zone { display: none; }
   }

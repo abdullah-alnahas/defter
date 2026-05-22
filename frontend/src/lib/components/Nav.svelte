@@ -1,15 +1,11 @@
-<script>
-  import Link from './Link.svelte';
-</script>
-
 <a class="skip" href="#main-content">Skip to content</a>
 
 <div class="nav-zone">
   <nav aria-label="Primary">
     <ul>
-      <li><Link to="/">Blog</Link></li>
-      <li><Link to="/featured">Featured</Link></li>
-      <li><Link to="/p/cv">CV</Link></li>
+      <li><a href="/">Blog</a></li>
+      <li><a href="/featured">Featured</a></li>
+      <li><a href="/p/cv">CV</a></li>
       <li><a href="https://github.com/abdullah-alnahas" rel="me noopener">GitHub</a></li>
       <li><a href="https://www.linkedin.com/in/abdullah-alnahas" rel="me noopener">LinkedIn</a></li>
       <li><a href="/rss.xml" type="application/rss+xml">RSS</a></li>
@@ -35,7 +31,6 @@
   .nav-zone {
     position: fixed;
     top: 0;
-    /* leave a gap for the theme bar in the top-right corner */
     inset-inline-start: 0;
     inset-inline-end: 6rem;
     height: 2.5rem;
@@ -76,22 +71,19 @@
 
   li { margin: 0; }
 
-  nav :global(a) {
+  nav a {
     color: var(--muted);
     text-decoration: none;
     padding: 0.15rem 0.1rem;
     border-bottom: 1px solid transparent;
     transition: color 150ms ease, border-color 150ms ease;
   }
-
-  nav :global(a:hover),
-  nav :global(a:focus-visible) {
+  nav a:hover, nav a:focus-visible {
     color: var(--fg);
     border-bottom-color: var(--rule);
     outline: none;
   }
-
-  nav :global(a:focus-visible) {
+  nav a:focus-visible {
     outline: 2px solid var(--fg);
     outline-offset: 3px;
     border-bottom-color: transparent;

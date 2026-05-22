@@ -20,38 +20,22 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Cache cargo
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            backend/target
-          key: cargo-${{ hashFiles('backend/Cargo.lock') }}
-
       - name: Install frontend deps
         working-directory: frontend
         run: bun install --frozen-lockfile
 
-      - name: Build frontend (SSR prerender)
+      - name: Build SvelteKit static site
         working-directory: frontend
         run: bun run build
 
-      - name: Build backend (release)
-        working-directory: backend
-        run: cargo build --release
-
-      - name: Start backend
-        working-directory: backend
+      - name: Start preview server
+        working-directory: frontend
         run: |
-          ./target/release/defter &
-          echo $! > /tmp/backend.pid
+          bun run preview &
+          echo $! > /tmp/preview.pid
           for i in 1 2 3 4 5 6 7 8 9 10; do
             if curl -fsS http://127.0.0.1:8787/ > /dev/null; then echo ready; break; fi
-            sleep 0.3
+            sleep 0.5
           done
 
       - name: Install Lighthouse
@@ -91,9 +75,9 @@ jobs:
             exit 1
           fi
 
-      - name: Stop backend
+      - name: Stop preview server
         if: always()
-        run: kill $(cat /tmp/backend.pid) || true
+        run: kill $(cat /tmp/preview.pid) || true
 
       - name: Upload Lighthouse reports
         if: always()

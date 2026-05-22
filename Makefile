@@ -1,4 +1,4 @@
-.PHONY: install dev build run release clean
+.PHONY: install dev build preview run clean
 
 install:
 	cd frontend && bun install
@@ -9,11 +9,10 @@ dev:
 build:
 	cd frontend && bun run build
 
-run: build
-	cd backend && cargo run
+preview: build
+	cd frontend && bun run preview
 
-release: build
-	cd backend && cargo run --release
+run: preview
 
 clean:
-	rm -rf frontend/dist frontend/node_modules backend/target
+	rm -rf frontend/build frontend/node_modules frontend/.svelte-kit
