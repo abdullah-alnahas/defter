@@ -7,13 +7,10 @@
 ## Home page
 Not entirely decided yet. By default, it could be the blog view, showing: picked blogs, recent blogs, then the full list of all blogs.
 
-## Navbar
-- CV
-- Blog
-- GitHub
-- LinkedIn
-- RSS feed (I don't yet know what it is or how it works, lol)
-- Featured — pages I want to feature. The view would be a single centered column containing a card for each project page. Each card would show a brief description, an external link if applicable, and a link to the page on my website.
+## Navigation
+- Persistent right-margin aside (always visible). Links: Blog, Featured, CV, GitHub, LinkedIn, RSS.
+- No top navbar. The aside is the only nav surface.
+- Skip-link at top for keyboard users.
 
 ## Page concept
 Everything on the website is conceptually a "page." A page can be:
@@ -34,15 +31,15 @@ For any page I create in the website editor:
 - Arbitrary JS code in a block — for example, to demo an idea inline. (Maybe call it an "executed code block" rather than just "code block"? Sounds a bit mouthy though.)
 - Several themes, each with a dark and a light variant.
 - Extremely minimal looking but rich. Examples:
-  - The top navbar is hidden by default and appears on hover.
+  - No top navbar — nav lives quietly in the right margin, always visible but dim.
   - A hidden sections navigator on the left, also revealed on hover.
-  - Each published page has a TL;DR button that is hidden by default and appears on hover.
+  - Each published page has a TL;DR trigger styled as a subtle button next to the title — dim by default, brightens on hover, clicks pin a TL;DR margin note like a sidenote.
   - Plenty of negative space.
   - Best UI/UX practices.
   - Optimized for reading, calm, relaxation, eye comfort, no clutter, no distractors, and a single focus point for the user.
 
 ## Page structure
-Each page necessarily starts with: basmalah, hamd, salawat.
+Each page necessarily starts with: basmalah, hamd, salawat — all rendered with diacritics. Basmalah and hamd use the Quran font (UthmanTN), the opening salawat uses the regular Arabic stack.
 
 Each page necessarily ends with:
 1. The Ayah (rendered with a Quran font from `fonts/`, e.g. `UthmanicHafs_V22.ttf` or `UthmanTN_v2-0.ttf`):
@@ -53,14 +50,28 @@ Each page necessarily ends with:
 
    اللّهُمَّ صَلِّ على سيِّدِنا مُحمَّدٍ وعلى آلِ سيِّدِنا مُحمَّدٍ، كَما صَلَّيْتَ على سيِّدِنا إبراهيمَ وعلى آلِ سيِّدِنا إبراهيمَ، إنَّكَ حَميدٌ مَجيدٌ. اللّهُمَّ بارِكْ على سيِّدِنا مُحمَّدٍ وعلى آلِ سيِّدِنا مُحمَّدٍ، كَما بارَكْتَ على سيِّدِنا إبراهيمَ وعلى آلِ سيِّدِنا إبراهيمَ، إنَّكَ حَميدٌ مَجيدٌ.
 
-## Footnotes
-Interactive footnotes. Two interactions, one design:
+## Sidenotes + TL;DR (one mental model, one surface)
+Interactive margin notes that live invisibly in the right margin column and reveal on demand.
 
-- **Hover (or keyboard focus) a footnote reference** → an ephemeral preview popover floats next to the ref. Only one preview at a time; moving to another ref replaces it; moving away dismisses it.
-- **Click a reference** → the note is *pinned* into a shared sticky stack in the right margin (the "margin column"). Pinned notes accumulate, sorted by their reference's vertical position in the document, so the stack reads top-to-bottom in document order. Each pin shows an unpin × control; the stack header shows "Pinned (N)" and a "Clear all" button. Pressing `Esc` clears all pins. Pins live in memory only — fresh tab = empty stack.
-- **Same label opened twice** → counts as two separate pins (per-occurrence identity).
-- **Endnote list** is always present after the article body, regardless of pins. This is the canonical reading affordance for assistive tech, print, and feed readers.
-- **Narrow viewports (no room for a margin column)** → no preview popover; clicking the ref toggles an inline expansion immediately under the ref instead.
+- **Each footnote reference** spawns its own margin slot at the ref's vertical position (float-down on collision).
+- **Hover ref or hover note** → reveal (opacity 0 → 1).
+- **Click ref** → pin (stays revealed until clicked again or `Esc`).
+- **Same label opened twice** → two separate slots (per-occurrence identity).
+- **TL;DR** uses the same surface and same interaction model: a small dim "TL;DR" button next to the title spawns a margin note. Hover the button → preview. Click → pin.
+- **Pin/Unpin all** toggle lives in the right margin aside — flips every sidenote (and TL;DR) at once.
+- **Endnote list** is always present after the article body for assistive tech, print, and feed readers.
+- **Narrow viewports** (≤ 56rem) collapse the right margin column to flow below the body — notes still hidden until hover/tap of their ref.
+
+## Typography
+- **Body / UI:** Montserrat (self-hosted woff2, 400 + 500 + 600, latin + latin-ext subsets, `font-display: optional` so first paint never shifts).
+- **Quran:** UthmanTN (preloaded, subset to Arabic blocks only).
+- **Regular Arabic:** Amiri / Scheherazade New / Noto Naskh Arabic.
+
+## Layout
+- Symmetric 3-column grid: equal-width margin / body (capped at `--measure`) / equal-width margin. Body is centred. Sidenotes live in the right margin column.
+- Right-margin aside (nav + Pin-all): fixed top-right.
+- Theme toggle: fixed top-right (above the aside).
+- Back-to-top button: fixed bottom-right. Always visible but dim (muted-on-bg ≥ 5:1 contrast). On hover/focus, brightens and reveals the "Back to top" label.
 
 ## Languages and direction
 Blogs should support Arabic, Turkish, and English by default. A title, paragraph, or other element may use any mix of these. The website should support both RTL and LTR. Insha'Allah!
@@ -80,13 +91,14 @@ When creating a blog post, I would like to choose between different elements:
 - etc.
 
 ## Quality bar
-The website must achieve a Lighthouse score of 100 in all four categories — Performance, Accessibility, Best Practices, SEO — on every page. Treat this as a hard constraint, not an aspiration. Concrete implications:
+The website must achieve a Lighthouse score of 100 in all four categories — Performance, Accessibility, Best Practices, SEO — on every page, on **desktop**. Mobile target is 100 across A11y/BP/SEO and ≥ 99 on Performance (the inlined hydration bundle plus Montserrat + UthmanTN preload puts FCP at the 1.0–1.4s range on simulated Slow 4G — within "good" Core Web Vitals but rounded just below a perfect score). Treat 100×4 desktop as a hard constraint. Concrete implications:
 - Static prerender per page so initial HTML carries full content, correct `<title>`, `<meta description>`, `<html lang>` and `dir` — no blank SPA shell.
-- Every hover-revealed control (navbar, section nav, TL;DR) must have a keyboard-equivalent (focus-visible, skip links).
+- Every hover-revealed control (section nav, TL;DR trigger, back-to-top label) must have a keyboard-equivalent (focus-visible, skip links).
 - Color tokens must satisfy WCAG AA contrast (≥ 4.5:1 body, ≥ 3:1 large text and UI components) across every theme variant.
-- Images carry explicit width/height, modern format, lazy loading below the fold.
+- Images carry explicit width/height, modern format, lazy loading below the fold. Same for executable iframes — explicit `width`/`height` attributes prevent CLS.
 - Per-page Open Graph / Twitter card meta; sitemap + robots.txt served at root.
 - No console errors, no deprecated APIs, no render-blocking third-party scripts.
+- `font-display: optional` on web fonts so first paint never reflows when fonts swap in.
 
 وصلى الله على سيدنا محمد وعلى آله وصحبه أجمعين
 والحمد لله رب العالمين

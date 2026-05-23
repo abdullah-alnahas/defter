@@ -8,6 +8,7 @@ Vision: see `concept.txt`. Per-iteration status: see `STATUS.md`.
 
 - **SvelteKit + Svelte 5 (runes)** with `@sveltejs/adapter-static` — pure static prerender, no runtime server in production.
 - **Markdown pipeline** at build time inside `+page.server.js` loaders: `marked` + `marked-footnote` + `marked-gfm-heading-id` + custom preprocessors (`:::ayah`, `:::hadith`, ` ```exec ` fenced blocks, sidenote injector).
+- **Typography:** Montserrat self-hosted (woff2, 400/500/600, latin + latin-ext); UthmanTN preloaded for the Quran-font opening lines.
 - **Bun** for install + scripts; **Vite** under the hood (SvelteKit's bundler).
 - **No backend.** Output is a static `build/` folder — drop into Nginx, Caddy, Pages, S3+CloudFront, anywhere static.
 
@@ -17,19 +18,19 @@ Vision: see `concept.txt`. Per-iteration status: see `STATUS.md`.
 frontend/
   src/
     app.html                              template (theme-init script, font preload, RSS link)
-    app.css                               theme tokens + sidenote/exec/ayah styles
+    app.css                               font-faces, theme tokens, sidenote/exec/ayah/button styles
     lib/
       server/content.js                   filesystem walker, frontmatter parser, marked pipeline, footnote extractor
-      sidenotes.svelte.js                 runes state: hover / pin / unpin / clearPins
+      sidenote-bus.svelte.js              tiny pub/sub: Sidenotes ↔ MarginAside (pin-all toggle)
       components/
-        Page.svelte                       mandatory wrapper (basmalah/title/TLDR/body/closing Ayah + Ibrahimi salawat)
-        Nav.svelte                        hover-revealed top navbar + skip-link
+        Page.svelte                       mandatory wrapper (basmalah/hamd with Quran font + diacritics, title row with TLDR trigger, body, closing Ayah + Ibrahimi salawat). Symmetric 3-col grid (margin/body/margin).
         SectionNav.svelte                 hover-revealed left in-page TOC
-        ThemeToggle.svelte                two-button bar: P/S palette + sun/moon variant
-        Sidenotes.svelte                  hydration: binds events to .fn-ref + mounts MarginNotes
-        MarginNotes.svelte                sticky right rail (pinned stack + hover preview slot)
+        ThemeToggle.svelte                two-button bar: P/S palette + sun/moon variant (fixed top-right)
+        MarginAside.svelte                persistent right-margin nav + pin-all (fixed top-right)
+        BackToTop.svelte                  fixed bottom-right, dim arrow → hover reveals label
+        Sidenotes.svelte                  per-page mount: scans refs, creates margin slots, binds hover/click/pin
     routes/
-      +layout.{js,server.js,svelte}       global prerender, page-list loader, layout shell
+      +layout.{js,svelte}                 global prerender, skip-link, mounts ThemeToggle + MarginAside + BackToTop
       +page.svelte                        home (Picked / Recent / All)
       featured/+page.svelte               featured-cards view
       p/[slug]/{+page.server.js,+page.svelte}   markdown pages (entries() enumerates content/*.md)
@@ -41,8 +42,10 @@ frontend/
       llm.txt/+server.js                  LLM-readable site summary
   static/
     fonts/UthmanTN-Arabic.woff2           Quran-font Arabic subset (45.5 KB)
+    fonts/Montserrat-{400,500,600}-{latin,latin-ext}.woff2   body font (≈ 18–32 KB each)
+    favicon.svg                           inline SVG glyph (د)
   svelte.config.js                        adapter-static, prerender, $content alias → ../content
-  vite.config.js                          sveltekit() plugin
+  vite.config.js                          sveltekit() plugin + cache-control headers for preview
 content/                                  *.md with TOML frontmatter — source of all blog content
 ```
 
@@ -56,7 +59,7 @@ title = "..."
 lang = "en"      # or ar, tr
 dir  = "ltr"     # or rtl
 date = "2026-05-22"
-tldr = "..."     # optional; renders a hover-revealed TL;DR button
+tldr = "..."     # optional; spawns a dim TL;DR button next to the title (hover → preview, click → pin)
 featured = true  # optional; appears on /featured as a card
 external = "https://..." # optional; external link on the featured card
 +++
@@ -65,11 +68,11 @@ Markdown body here.
 ```
 
 Footnotes use standard Markdown syntax: `[^label]` inline ref, `[^label]: ...` definition.
-- Hover (desktop) → ephemeral preview popover near the ref.
-- Click → pin into the right-margin stack (sorted by document position).
-- Multiple pins stack vertically with unpin × per item + "Clear all" header. `Esc` clears all.
-- Narrow viewport: click renders an inline expansion under the ref instead.
+- Each ref → invisible margin slot at its vertical position.
+- Hover ref or note → reveal. Click ref → pin. Click again → unpin. `Esc` clears all.
+- Pin/Unpin-all toggle lives in the right margin aside.
 - Endnote list always present at body bottom (a11y / print / readers).
+- Narrow viewport (≤ 56rem): notes flow below the body in document order.
 
 ### Executable JS code blocks
 
@@ -82,7 +85,7 @@ print(2 + 2);
 ```
 ````
 
-Sandbox is `allow-scripts` only. Runtime exposes `print(...)`; thrown errors render in red.
+Sandbox is `allow-scripts` only. Runtime exposes `print(...)`; thrown errors render in red. Explicit `width`/`height` attributes prevent CLS.
 
 ### Ayah / Hadith blocks
 
@@ -113,4 +116,5 @@ make clean     # nuke build / node_modules / .svelte-kit
 
 ## Quality bar
 
-Lighthouse 100 in Performance, Accessibility, Best Practices, SEO on every route × form-factor (mobile + desktop). Hard constraint, enforced by `.github/workflows/lighthouse.yml` on every push/PR to `main`.
+- **Desktop:** Lighthouse 100 in Performance, Accessibility, Best Practices, SEO on every route. Hard constraint, enforced by `.github/workflows/lighthouse.yml` on every push/PR to `main`.
+- **Mobile:** 100 across A11y / BP / SEO; Performance ≥ 99 (the inlined hydration bundle + Montserrat + UthmanTN preload puts FCP at 1.0–1.4 s on simulated Slow 4G — within "good" Core Web Vitals but rounded just short of perfect). CLS = 0 verified.

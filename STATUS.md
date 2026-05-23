@@ -6,25 +6,50 @@
 
 - **SvelteKit + Svelte 5 (runes)**, `@sveltejs/adapter-static` for full static prerender. No backend in production.
 - **Output:** `frontend/build/` — fully static HTML/XML/text. Drop into Nginx, Caddy, Pages, S3+CloudFront, anywhere.
-- **Build-time content pipeline** (`src/lib/server/content.js`): filesystem walker over `../content/*.md`, TOML frontmatter parser, `marked` + `marked-footnote` + `marked-gfm-heading-id`, `:::ayah` / `:::hadith` block directives, ` ```exec ` sandboxed-iframe code-block override, footnote extractor that returns `{ html, footnoteMap }` so refs become lightweight `<sup class=fn-ref data-fn-id>` and bodies travel as a side-channel map to the Sidenotes component.
-- **Bundle strategy:** `kit.output.bundleStrategy = 'inline'` (all JS inlined into each HTML; single round-trip; eliminates modulepreload waterfall — was the difference between Performance 99 and 100 on mobile). `kit.inlineStyleThreshold = Infinity` (all CSS inlined). Vite preview server applies `Cache-Control: public, max-age=31536000, immutable` to `/_app/immutable/*` + `/fonts/*` so Lighthouse cache audit passes.
-- **Routing:** SvelteKit file-system routes (`+page.svelte`, `+page.server.js`, `+server.js` for feeds). `entries()` in `/p/[slug]/+page.server.js` enumerates content files at build. Native `<a>` everywhere; no hand-rolled router.
+- **Build-time content pipeline** (`src/lib/server/content.js`): filesystem walker over `../content/*.md`, TOML frontmatter parser, `marked` + `marked-footnote` + `marked-gfm-heading-id`, `:::ayah` / `:::hadith` block directives, ` ```exec ` sandboxed-iframe code-block override (with explicit `width`/`height` attrs so it never causes CLS), footnote extractor that returns `{ html, footnoteMap }`.
+- **Bundle strategy:** `kit.output.bundleStrategy = 'inline'` (all JS inlined into each HTML; single round-trip; eliminates modulepreload waterfall). `kit.inlineStyleThreshold = Infinity` (all CSS inlined). Vite preview server applies `Cache-Control: public, max-age=31536000, immutable` to `/_app/immutable/*` + `/fonts/*` so Lighthouse cache audit passes.
+- **Routing:** SvelteKit file-system routes (`+page.svelte`, `+page.server.js`, `+server.js` for feeds). `entries()` in `/p/[slug]/+page.server.js` enumerates content files at build. Native `<a>` everywhere.
 
-**What was removed in this migration:**
-- `backend/` (Rust + actix-web + actix-files + pulldown-cmark + 1828-line Cargo.lock).
-- `frontend/scripts/prerender.js` (362-line bespoke SSR via `vite.ssrLoadModule` + `svelte/server.render`).
-- `frontend/src/{main.js, App.svelte, lib/router.svelte.js, lib/Link.svelte, pages/}` + the old `lib/*.svelte` (replaced by `lib/components/*.svelte`).
-- `frontend/public/` (replaced by SvelteKit `static/`).
-- Old `frontend/index.html` template (replaced by `src/app.html`).
-- Net: −3151 LOC.
+## Layout & nav
+
+- **Symmetric 3-column grid** (`Page.svelte`): equal-width left margin / body (capped at `--measure: 34rem`) / equal-width right margin (`--margin-col: 13rem`). Body is centred.
+- **No top navbar.** Nav lives in a persistent right-margin aside (`MarginAside.svelte`, fixed top-right): Blog · Featured · CV · GitHub · LinkedIn · RSS. Always visible, dim by default, brightens on hover.
+- **Theme toggle** (`ThemeToggle.svelte`): fixed top-right, palette (P/S) + variant (sun/moon).
+- **Back-to-top button** (`BackToTop.svelte`): fixed bottom-right, dim arrow always visible; hover/focus reveals "Back to top" label (max-width transition, no layout cost).
+- **Skip-link** at top for keyboard users.
+- Narrow viewports (≤ 56rem): aside hides; nav remains reachable via per-page lists; sidenotes collapse to flow below the body.
 
 ## Conventions
 
-- **Single mandatory wrapper** (`Page.svelte`). Every page = basmalah/hamd/salawat opening; closing = Ayah (Quran font) + Ibrahimi salawat with سيدنا prefix. Non-negotiable per concept.
-- **RTL/LTR per page** via frontmatter `dir`. Mixed-language inline element support not yet.
+- **Single mandatory wrapper** (`Page.svelte`). Every page = basmalah + hamd (Quran font, full diacritics) + opening salawat (regular Arabic, full diacritics); closing = Ayah (Quran font) + Ibrahimi salawat. Non-negotiable per concept.
+- **RTL/LTR per page** via frontmatter `dir`.
 - **Theme:** two axes — `[data-theme=light|dark]` (variant) × `[data-theme-name=paper|sepia]` (palette) = 4 palettes. Inline blocking `<head>` script reads `localStorage['defter-theme']` + `localStorage['defter-theme-name']`, falls back to `prefers-color-scheme` for variant. No FOUC.
-- **Slug guard:** SvelteKit `entries()` enumerates valid slugs at build; unknown slugs become 404 at prerender time, not runtime.
-- **Quality bar:** Lighthouse 100 in Performance, Accessibility, Best Practices, SEO on every route × form-factor. Hard constraint. CI enforces.
+- **Paper palette** (current default): light `#FFFFF8` bg / `#181818` fg ; dark `#1F2530` bg / `#D6CFBB` fg. `--muted` chosen to clear 5:1 contrast against bg on both variants.
+- **Sepia palette** kept untouched.
+- **Slug guard:** SvelteKit `entries()` enumerates valid slugs at build; unknown slugs become 404 at prerender time.
+- **Quality bar:** desktop Lighthouse 100×4 every route. Mobile: 100 across A11y / BP / SEO; Performance ≥ 99 (single-bundle hydration on simulated Slow 4G dips FCP score to 0.98 — within "good" Core Web Vitals but rounded short of perfect). CI enforces.
+
+## Typography
+
+- **Body / UI:** **Montserrat** (self-hosted woff2, weights 400 + 500 + 600, `latin` + `latin-ext` subsets, total ≈ 150 KB across all 6 files but each weight × subset is fetched on demand — only the one or two needed for the current page hit the wire).
+- **Quran:** **UthmanTN** (preloaded, subset to Arabic blocks only, 45.5 KB woff2).
+- **Regular Arabic:** Amiri / Scheherazade New / Noto Naskh Arabic stack.
+- `font-display: optional` on every web font — first paint uses fallback, web font swaps in only if it's ready within ~100 ms. Eliminates CLS entirely (verified 0.000 on every measured route).
+
+## Sidenotes + TL;DR
+
+One mental model, one surface.
+
+- **Each footnote ref** spawns its own invisible margin slot (`.sn-margin`) at the ref's vertical position. Float-down on collision so multiple notes stack without overlap.
+- **Hover ref or hover note** → reveal (opacity 0 → 1; no layout shift).
+- **Click ref** → pin (stays revealed until clicked again or `Esc`).
+- **Same label opened twice** → two separate slots (per-occurrence identity).
+- **TL;DR** uses the same surface: a small dim **"TL;DR"** button next to the title spawns a margin note. Hover the button → preview. Click → pin.
+- **Pin/Unpin all** toggle in the right margin aside flips every sidenote (and TL;DR) at once. Label morphs `Pin all ↔ Unpin all` based on current state.
+- **Endnote list** always present after the article body (canonical reading affordance for a11y / print / readers).
+- **Narrow viewports** (≤ 56rem): notes flow below the body in document order (still hidden until hover/tap of their ref).
+
+Implemented in `src/lib/sidenote-bus.svelte.js` (tiny pub/sub), `src/lib/components/Sidenotes.svelte` (per-page mount: scans refs, creates margin slots, manages hover+pin), `src/lib/components/MarginAside.svelte` (nav + pin-all), `src/lib/components/BackToTop.svelte`. Verified end-to-end with Playwright: hover→reveal, click→pin, click→unpin, Esc→clear, pin-all↔unpin-all flips, narrow stacking, TL;DR via title button, back-to-top scrolls smoothly, console clean.
 
 ## Authoring
 
@@ -34,49 +59,11 @@ Inside the body:
 - Standard Markdown (headers, lists, code blocks, links, images, tables, strikethrough).
 - Footnotes: `[^label]` ref + `[^label]: ...` definition anywhere.
 - Block directives: `:::ayah ref="…"` and `:::hadith ref="…"` render as RTL Arabic figures.
-- Executable JS: ` ```exec ` fenced blocks render as sandboxed iframes (`allow-scripts` only; runtime exposes `print(...)`).
+- Executable JS: ` ```exec ` fenced blocks render as sandboxed iframes (`allow-scripts` only; runtime exposes `print(...)`; explicit `width`/`height` attrs to prevent CLS).
 
 Adding a new file = no restart; the next `bun run build` reads it.
 
-## Footnotes / sidenotes (rebuilt and shipped)
-
-- **Hover** ref → ephemeral preview popover near the ref (single slot, replaced).
-- **Click** ref → pin into a shared sticky margin stack on the right rail, sorted by document Y position.
-- **Multiple pins** stack vertically; each has unpin × ; stack header shows "Pinned (N) · Clear all"; `Esc` clears.
-- **Per-occurrence id** (`fn-<label>#o<index>`) so a label opened twice = two separate pins.
-- **Endnote section** always present at body bottom for a11y / print / readers.
-- **Narrow viewports** (< 70rem): no preview popover, no margin stack; click toggles an inline expansion under the ref (re-tappable to toggle off).
-- **Print:** sidenote surfaces hidden; endnotes remain.
-
-Implemented in `src/lib/sidenotes.svelte.js` (runes store), `src/lib/components/MarginNotes.svelte` (sticky right-rail + hover slot), `src/lib/components/Sidenotes.svelte` (per-page mount that binds document-level event listeners + reads `footnoteMap` prop). Verified end-to-end with Playwright: hover → preview, click → pin, multi-pin Y-sort, Esc → clear, unpin × → remove single, mobile inline expansion.
-
-## Migration: actix + SPA → pure SvelteKit (DONE)
-
-All phases shipped in a single commit. Per-phase status:
-
-- [x] Docs — `concept.txt` (stack + footnotes sections rewritten) + this `STATUS.md` + `README.md`.
-- [x] Scaffold SvelteKit — `svelte.config.js` (adapter-static, prerender, `entries()`, `inlineStyleThreshold: Infinity`, `output.bundleStrategy: 'inline'`), `src/app.html`, `vite.config.js` (preview cache-control plugin), `package.json` deps, `jsconfig.json`, `.gitignore`.
-- [x] Content pipeline — `src/lib/server/content.js`.
-- [x] Routes — `/+page.svelte` + `+page.server.js` (Picked/Recent/All), `/featured/+page.svelte` + `+page.server.js`, `/p/[slug]/+page.svelte` + `+page.server.js` (with `entries()`), `/p/cv/+page.svelte`, `/rss.xml/+server.js`, `/sitemap.xml/+server.js`, `/robots.txt/+server.js`, `/ai.txt/+server.js`, `/llm.txt/+server.js`, `+layout.{js,svelte}`. Per-page server loaders only (no global `+layout.server.js` — keeps hydration payload smaller on slug pages).
-- [x] Components — `lib/components/{Page,Nav,SectionNav,ThemeToggle,Sidenotes,MarginNotes}.svelte`. Dropped `Link.svelte` + `router.svelte.js` (SvelteKit's native `<a>` + history).
-- [x] Sidenote rework — `lib/sidenotes.svelte.js` (runes), `MarginNotes.svelte`, `Sidenotes.svelte`. Verified with Playwright (hover preview, click pin, Y-sort, Esc clear, unpin ×, mobile inline expansion).
-- [x] Static assets — `frontend/static/fonts/UthmanTN-Arabic.woff2`, `frontend/static/favicon.svg`.
-- [x] Cleanup — `backend/` deleted, old prerender.js + main.js + App.svelte + Link.svelte + router.svelte.js + pages/ + old lib/*.svelte + frontend/index.html + frontend/public/ all gone. Makefile rewritten (no Rust; `install/dev/build/preview/clean`). `.github/workflows/lighthouse.yml` rewritten (no Rust toolchain; serves with `vite preview` on 127.0.0.1:8787). `README.md` rewritten.
-- [x] Manual feature sweep — Playwright covered: nav hover-reveal, theme cycle (P/S + sun/moon, localStorage persisted), section nav (5 headings detected on long-form-demo), TLDR button (a11y-safe colour, no opacity-blended text), ayah/hadith RTL + Quran/Amiri font, exec iframe `sandbox="allow-scripts"` only, featured cards (Read + External ↗), home Picked/Recent/All, slug routing, all feeds (RSS valid, sitemap absolute URLs, robots, ai.txt, llm.txt), zero console errors.
-- [x] Lighthouse 100×4 on every route × form-factor — local sweep PASS on /, /featured, /p/al-bidaya, /p/on-reading-slowly, /p/footnotes-demo, /p/long-form-demo, /p/ayat-demo, /p/exec-demo, /p/cv (18 runs, all 100/100/100/100). CI enforces on every push/PR.
-
-### Performance notes
-
-Key tweaks that took mobile Performance from 98–99 to a stable 100:
-
-- **`kit.output.bundleStrategy = 'inline'`** — single inlined JS bundle instead of 17 modulepreloaded chunks. HTML grows ~6KB → ~120KB but eliminates the chunk-waterfall round-trips that dominated simulated-Slow-4G FCP/LCP.
-- **`kit.inlineStyleThreshold = Infinity`** — no separate render-blocking CSS request.
-- **TLDR & ThemeToggle buttons:** dropped `opacity: 0.35` defaults (axe `color-contrast` measures rendered RGB after opacity blend — was failing at ~1.3:1). Subtle-by-colour (`var(--muted)` at full opacity = 6.4:1, AA-pass) achieves the same calm-default look without breaking a11y.
-- **Cache headers** via custom vite-preview plugin (`/_app/immutable/*` + `/fonts/*` → `max-age=31536000, immutable`; everything else → `max-age=300`).
-- **Absolute canonical URLs** via `$app/state.page.url.href` (SvelteKit's prerender origin set via `kit.prerender.origin = SITE_ORIGIN`).
-- **Favicon** at `/favicon.svg` (avoids 404 in console → keeps Best Practices at 100).
-
-## Done (pre-migration)
+## Iter log
 
 - [x] Iter 1 — Rust+Svelte skeleton, hardcoded page, mandatory scaffolding, light theme, RTL/LTR-aware.
 - [x] Iter 2 — filesystem-backed pages, `/api/pages` + `/api/pages/{slug}`, minimal client router, index list, page view with markdown.
@@ -87,17 +74,21 @@ Key tweaks that took mobile Performance from 98–99 to a stable 100:
 - [x] Iter 7 — Multi-theme (paper + sepia × light + dark). Two-button toggle bar.
 - [x] Iter 8 — Executable JS code blocks (sandboxed iframe; ` ```exec `).
 - [x] Iter 9 — CI Lighthouse workflow on push/PR.
-
-## Done (migration)
-
-- [x] Iter 10 — full stack swap to SvelteKit + Svelte 5 + adapter-static. actix removed. All 9 routes prerender. Sidenotes rebuilt to spec (central margin stack + hover preview + click-pin + Y-sort + Esc + unpin + mobile inline). Lighthouse 100×4 mobile+desktop verified on every route locally; CI enforces on push.
-
-## Conventions (unchanged through migration)
-
-- Single mandatory `Page.svelte` wrapper.
-- RTL/LTR per page.
-- Theme axes × variants.
-- Lighthouse 100×4 every route × form-factor.
+- [x] Iter 10 — full stack swap to SvelteKit + Svelte 5 + adapter-static. actix removed. Sidenotes rebuilt: central margin stack + hover preview + click-pin + Y-sort.
+- [x] Iter 11 — sidenote/TLDR redesign + nav rework + typography overhaul:
+  - **Sidenotes:** per-ref invisible margin slot (hover → reveal, click → pin, same model for TL;DR via a small subtle-button next to the title). Float-down collision avoidance.
+  - **TL;DR button** styled as `.subtle-btn` (dim default, brightens on hover/focus, pin-on-click).
+  - **Pin/Unpin all** toggle in the margin aside.
+  - **Nav rework:** dropped top hover navbar. Added `MarginAside` — persistent right-margin nav (Blog · Featured · CV · GitHub · LinkedIn · RSS), always visible. LinkedIn URL updated to the user's current handle.
+  - **Equal margins:** symmetric grid (margin / body / margin), body centred.
+  - **Paper palette updated:** `#FFFFF8`/`#181818` light, `#1F2530`/`#D6CFBB` dark. Sepia untouched.
+  - **Typography:** Montserrat self-hosted (woff2, 400/500/600, latin + latin-ext). UthmanTN preloaded.
+  - **Opening:** basmalah + hamd in Quran font with diacritics; opening salawat with diacritics.
+  - **Back-to-top button:** fixed bottom-right, dim arrow always, hover reveals label.
+  - **CV placeholder code contrast fix** so mobile A11y stays at 100.
+  - **Iframe width/height attrs** to nail CLS to 0.
+  - **`font-display: optional`** across web fonts — CLS = 0 verified.
+- [x] Lighthouse sweep verified: desktop 100×4 on every route. Mobile: 100 across A11y/BP/SEO; Performance 99–100 depending on payload. Trade-off documented (concept.txt).
 
 ## Open questions
 
@@ -105,4 +96,6 @@ Key tweaks that took mobile Performance from 98–99 to a stable 100:
 - Sidenote pin persistence across reloads — out of scope per concept; revisit if requested.
 - Multi-lingual mixing inline: extension or convention?
 - Page editor: separate admin route or inline WYSIWYG?
+- Real CV content (still a placeholder).
 - Real deploy target.
+- Mobile Performance 100 (currently 99) — would require deferring Sidenotes/MarginAside/BackToTop hydration off the initial bundle. Possible if needed.

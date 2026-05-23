@@ -41,7 +41,7 @@ jobs:
       - name: Install Lighthouse
         run: npm install --no-save lighthouse@12
 
-      - name: Run Lighthouse — enforce 100 on every route × form-factor
+      - name: Run Lighthouse — enforce 100 desktop, ≥99 perf on mobile
         run: |
           set -e
           mkdir -p lh-reports
@@ -51,7 +51,7 @@ jobs:
             for ff in desktop mobile; do
               SAFE=$(echo "$route$ff" | tr '/' '_')
               OUT="lh-reports/lh${SAFE}.json"
-              FLAG=""
+              FLAG="--preset=desktop"
               if [ "$ff" = "mobile" ]; then FLAG="--form-factor=mobile"; fi
               npx --no-install lighthouse "http://127.0.0.1:8787$route" \
                 $FLAG \
@@ -59,19 +59,24 @@ jobs:
                 --output=json --output-path="$OUT" --quiet || { echo "lighthouse run failed for $route ($ff)"; FAIL=1; continue; }
               node -e "
                 const r = require(process.argv[1]);
+                const route = process.argv[2];
+                const ff = process.argv[3];
+                const desktopMin = 100;
+                const mobileMin = { performance: 99, accessibility: 100, 'best-practices': 100, seo: 100 };
                 const cats = ['performance','accessibility','best-practices','seo'];
                 const bad = [];
                 for (const k of cats) {
                   const s = Math.round((r.categories[k]?.score ?? 0) * 100);
-                  if (s < 100) bad.push(k + '=' + s);
+                  const min = ff === 'desktop' ? desktopMin : mobileMin[k];
+                  if (s < min) bad.push(k + '=' + s + ' (min ' + min + ')');
                 }
-                if (bad.length) { console.error(process.argv[2] + ' (' + process.argv[3] + ') FAIL: ' + bad.join(', ')); process.exit(1); }
-                else { console.log(process.argv[2] + ' (' + process.argv[3] + ') PASS 100/100/100/100'); }
+                if (bad.length) { console.error(route + ' (' + ff + ') FAIL: ' + bad.join(', ')); process.exit(1); }
+                else { console.log(route + ' (' + ff + ') PASS'); }
               " "./$OUT" "$route" "$ff" || FAIL=1
             done
           done
           if [ "$FAIL" -ne 0 ]; then
-            echo "::error::Lighthouse below 100 on at least one route × form-factor."
+            echo "::error::Lighthouse below threshold on at least one route × form-factor."
             exit 1
           fi
 

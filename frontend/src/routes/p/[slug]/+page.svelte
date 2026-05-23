@@ -1,6 +1,5 @@
 <script>
   import Page from '$lib/components/Page.svelte';
-  import Sidenotes from '$lib/components/Sidenotes.svelte';
   import { page } from '$app/state';
   let { data } = $props();
   const p = $derived(data.page);
@@ -18,8 +17,13 @@
   <meta name="twitter:card" content="summary" />
 </svelte:head>
 
-<Page title={p.title} dir={p.dir} lang={p.lang} tldr={p.tldr} headings={p.headings}>
+<Page
+  title={p.title}
+  dir={p.dir}
+  lang={p.lang}
+  tldr={p.tldr}
+  headings={p.headings}
+  footnoteMap={p.footnoteMap}
+>
   {@html p.body}
 </Page>
-
-<Sidenotes footnoteMap={p.footnoteMap} />

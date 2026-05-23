@@ -23,7 +23,7 @@ m.use({
       const code = token.text || '';
       if (lang === 'exec') {
         const escapedSrcdoc = escapeHtml(execIframeSrcdoc(code));
-        return `<figure class="exec"><iframe sandbox="allow-scripts" loading="lazy" referrerpolicy="no-referrer" srcdoc="${escapedSrcdoc}" title="Executable code block"></iframe><figcaption>Live code (sandboxed)</figcaption></figure>\n`;
+        return `<figure class="exec"><iframe sandbox="allow-scripts" loading="lazy" referrerpolicy="no-referrer" width="640" height="176" srcdoc="${escapedSrcdoc}" title="Executable code block"></iframe><figcaption>Live code (sandboxed)</figcaption></figure>\n`;
       }
       return false;
     },

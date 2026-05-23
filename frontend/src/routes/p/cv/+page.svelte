@@ -39,6 +39,7 @@
   }
   code {
     font-size: 0.92em;
+    color: var(--fg);
     background: var(--rule);
     padding: 0.05em 0.3em;
     border-radius: 3px;
