@@ -10,11 +10,13 @@
   --quran-ayah-num: 'UthmanicHafs', 'UthmanTN', 'Amiri Quran', serif;
 }
 
-/* Theme palette × variant.
-   Paper:
-     light bg #FFFFF8 / fg #181818
-     dark  bg #1F2530 / fg #D6CFBB
-   Sepia kept untouched. */
+/* Theme palettes × variant.
+   Each palette defines bg / fg / muted / rule / accent for both light and dark.
+   The CV page uses --accent for headings and links; other pages tolerate any palette.
+   Palettes are derived from /home/abdullah/Documents/hdd/career-ops/cv_*.html
+   (Windsor, Zapier, Clipboard, Enveritas, Salla, Brave) plus the original
+   Paper + Sepia. The current design's "spirit" (warm paper, generous rule lines,
+   muted secondary text) is preserved — only the colour values rotate. */
 :root,
 :root[data-theme='light'],
 :root[data-theme-name='paper'],
@@ -23,6 +25,7 @@
   --fg: #1E252D;
   --muted: #5b6470;
   --rule: #e3ddcd;
+  --accent: #1E252D;
 }
 :root[data-theme='dark'],
 :root[data-theme-name='paper'][data-theme='dark'] {
@@ -30,6 +33,7 @@
   --fg: #D6CFBB;
   --muted: #98927f;
   --rule: #2f3744;
+  --accent: #D6CFBB;
   color-scheme: dark;
 }
 :root[data-theme-name='sepia'],
@@ -38,12 +42,116 @@
   --fg: #2c2014;
   --muted: #6b5640;
   --rule: #d9caa8;
+  --accent: #6b3a12;
 }
 :root[data-theme-name='sepia'][data-theme='dark'] {
   --bg: #1f1810;
   --fg: #ecd8b3;
   --muted: #b09576;
   --rule: #382b1a;
+  --accent: #d6a86a;
+  color-scheme: dark;
+}
+/* Windsor — sky-blue / deep navy (from cv_windsor.html). */
+:root[data-theme-name='windsor'],
+:root[data-theme-name='windsor'][data-theme='light'] {
+  --bg: #f4f8fc;
+  --fg: #0e2640;
+  --muted: #5a6b80;
+  --rule: #e3edf7;
+  --accent: #1e3a8a;
+}
+:root[data-theme-name='windsor'][data-theme='dark'] {
+  --bg: #0e2640;
+  --fg: #cfe0f0;
+  --muted: #7a90aa;
+  --rule: #1f3550;
+  --accent: #6ec7ff;
+  color-scheme: dark;
+}
+/* Zapier — automation orange on warm off-white (from cv_zapier.html). */
+:root[data-theme-name='zapier'],
+:root[data-theme-name='zapier'][data-theme='light'] {
+  --bg: #f5f3eb;
+  --fg: #201515;
+  --muted: #6a5b5a;
+  --rule: #e5e2d9;
+  --accent: #ff4f00;
+}
+:root[data-theme-name='zapier'][data-theme='dark'] {
+  --bg: #201515;
+  --fg: #f5ece6;
+  --muted: #b69e9a;
+  --rule: #3c2e2a;
+  --accent: #ff7a40;
+  color-scheme: dark;
+}
+/* Clipboard — raspberry on warm beige (from cv_clipboard.html). */
+:root[data-theme-name='clipboard'],
+:root[data-theme-name='clipboard'][data-theme='light'] {
+  --bg: #E9E4DA;
+  --fg: #1F2430;
+  --muted: #4E5561;
+  --rule: #D8D1C0;
+  --accent: #C12A58;
+}
+:root[data-theme-name='clipboard'][data-theme='dark'] {
+  --bg: #2a241e;
+  --fg: #efe7d6;
+  --muted: #a89c84;
+  --rule: #3d3528;
+  --accent: #e84a78;
+  color-scheme: dark;
+}
+/* Enveritas — cool slate + deep navy accent (from cv_enveritas.html). */
+:root[data-theme-name='enveritas'],
+:root[data-theme-name='enveritas'][data-theme='light'] {
+  --bg: #f6f7f9;
+  --fg: #161a26;
+  --muted: #565d72;
+  --rule: #e5e7ed;
+  --accent: #002060;
+}
+:root[data-theme-name='enveritas'][data-theme='dark'] {
+  --bg: #161a26;
+  --fg: #e5e7ed;
+  --muted: #a4aab7;
+  --rule: #353c52;
+  --accent: #6e8cff;
+  color-scheme: dark;
+}
+/* Salla — warm gold on cream (from cv_salla.html). */
+:root[data-theme-name='salla'],
+:root[data-theme-name='salla'][data-theme='light'] {
+  --bg: #fdf9ed;
+  --fg: #2a2419;
+  --muted: #7a6a48;
+  --rule: #ece1c2;
+  --accent: #c08a18;
+}
+:root[data-theme-name='salla'][data-theme='dark'] {
+  --bg: #221c10;
+  --fg: #f1e7c8;
+  --muted: #a89a72;
+  --rule: #3a2f1c;
+  --accent: #FFD21E;
+  color-scheme: dark;
+}
+/* Brave — pink/coral/violet accent (from cv_brave.html). */
+:root[data-theme-name='brave'],
+:root[data-theme-name='brave'][data-theme='light'] {
+  --bg: #fffafe;
+  --fg: #1a1a2e;
+  --muted: #6a5872;
+  --rule: #f0d8e8;
+  --accent: #d9156f;
+}
+:root[data-theme-name='brave'][data-theme='dark'] {
+  --bg: #1a1a2e;
+  --fg: #ecebf0;
+  --muted: #8a85a2;
+  --rule: #2a2a3e;
+  --accent: #ff1893;
   color-scheme: dark;
 }
 

@@ -24,7 +24,7 @@ prepend the base path (CSS string URLs aren't rewritten by Vite).
 
 - **Symmetric 3-column grid** (`Page.svelte`): equal-width left margin / body (capped at `--measure: 34rem`) / equal-width right margin (`--margin-col: 13rem`). Body is centred.
 - **No top navbar.** Nav lives in a persistent left-margin aside (`MarginAside.svelte`, fixed top-start): Blog · Featured · CV · GitHub · LinkedIn · RSS. Always visible, dim by default, brightens on hover.
-- **Theme toggle bar** (`ThemeToggle.svelte`): fixed top-end, holds three icon buttons — pin-all (only when sidenotes exist on the page), palette (P/S), variant (sun/moon).
+- **Theme toggle bar** (`ThemeToggle.svelte`): fixed top-end, holds three icon buttons — pin-all (only when sidenotes exist on the page), palette (round swatch matching the current palette's `--accent`; cycles through paper / sepia / windsor / zapier / clipboard / enveritas / salla / brave), variant (sun/moon).
 - **Back-to-top button** (`BackToTop.svelte`): fixed bottom-end, dim arrow + "Back to top" label always visible.
 - **Skip-link** at top for keyboard users.
 - Narrow viewports (≤ 56rem): aside hides; nav remains reachable via per-page lists; sidenotes collapse to flow below the body.
@@ -33,9 +33,9 @@ prepend the base path (CSS string URLs aren't rewritten by Vite).
 
 - **Single mandatory wrapper** (`Page.svelte`). Every page = basmalah + hamd (Quran font, full diacritics) + opening salawat (regular Arabic, full diacritics); closing = Ayah (Quran font) + Ibrahimi salawat. Non-negotiable per concept.
 - **RTL/LTR per page** via frontmatter `dir`.
-- **Theme:** two axes — `[data-theme=light|dark]` (variant) × `[data-theme-name=paper|sepia]` (palette) = 4 palettes. Inline blocking `<head>` script reads `localStorage['defter-theme']` + `localStorage['defter-theme-name']`, falls back to `prefers-color-scheme` for variant. No FOUC.
-- **Paper palette** (current default): light `#FAF8F2` bg / `#1E252D` fg ; dark `#1F2530` bg / `#D6CFBB` fg. `--muted` chosen to clear 5:1 contrast against bg on both variants.
-- **Sepia palette** kept untouched.
+- **Theme:** two axes — `[data-theme=light|dark]` (variant) × `[data-theme-name=…]` (palette). Palettes: `paper` (default), `sepia`, `windsor`, `zapier`, `clipboard`, `enveritas`, `salla`, `brave` — each defines `--bg`, `--fg`, `--muted`, `--rule`, `--accent` for both light and dark. Inline blocking `<head>` script reads `localStorage['defter-theme']` + `localStorage['defter-theme-name']`, validates the palette name against the allowed list, falls back to `prefers-color-scheme` for variant. No FOUC.
+- **Palette origins:** windsor / zapier / clipboard / enveritas / salla / brave are distilled from `cv_*.html` mockups in `/home/abdullah/Documents/hdd/career-ops/`. Only the colour values cross the boundary; no copy or markup. The site's spirit (warm canvas, generous rule lines, muted secondary text) is preserved across all palettes — only `--bg / --fg / --muted / --rule / --accent` rotate.
+- **CV page** (`/p/cv`): single source of truth in `frontend/src/routes/p/cv/+page.svelte`, content distilled from `cv-generic.md` in career-ops. Personal contact info that wasn't already public (phone number) stays out of the repo. `--accent` drives headings + links so each palette tints the CV without changing layout.
 - **Slug guard:** SvelteKit `entries()` enumerates valid slugs at build; unknown slugs become 404 at prerender time.
 - **Quality bar:** desktop Lighthouse 100×4 every route. Mobile: 100 across A11y / BP / SEO; Performance ≥ 99 (single-bundle hydration on simulated Slow 4G dips FCP score to 0.98 — within "good" Core Web Vitals but rounded short of perfect). CI enforces.
 

@@ -5,7 +5,22 @@
   let themeName = $state('paper');
   let mounted = $state(false);
 
-  const NAMES = ['paper', 'sepia'];
+  const NAMES = ['paper', 'sepia', 'windsor', 'zapier', 'clipboard', 'enveritas', 'salla', 'brave'];
+  /* Swatch = the same colour the CSS exposes as --accent for each palette × variant.
+     Kept inline (not read from getComputedStyle) so the button reflects the
+     *next* palette in the cycle without forcing a paint round-trip. */
+  const SWATCH = {
+    paper:     { light: '#1E252D', dark: '#D6CFBB' },
+    sepia:     { light: '#6b3a12', dark: '#d6a86a' },
+    windsor:   { light: '#1e3a8a', dark: '#6ec7ff' },
+    zapier:    { light: '#ff4f00', dark: '#ff7a40' },
+    clipboard: { light: '#C12A58', dark: '#e84a78' },
+    enveritas: { light: '#002060', dark: '#6e8cff' },
+    salla:     { light: '#c08a18', dark: '#FFD21E' },
+    brave:     { light: '#d9156f', dark: '#ff1893' },
+  };
+  const nextPaletteName = $derived(NAMES[(NAMES.indexOf(themeName) + 1) % NAMES.length]);
+  const currentSwatch = $derived(SWATCH[themeName]?.[theme] ?? '#888');
 
   $effect(() => {
     const root = document.documentElement;
@@ -55,10 +70,12 @@
     <button
       type="button"
       class="theme-btn palette"
-      aria-label={`Palette: ${themeName}. Click to switch.`}
-      title={`Palette: ${themeName}`}
+      aria-label={`Palette: ${themeName}. Click for ${nextPaletteName}.`}
+      title={`Palette: ${themeName} → ${nextPaletteName}`}
       onclick={cyclePalette}
-    >{themeName === 'sepia' ? 'S' : 'P'}</button>
+    >
+      <span class="swatch" style="background:{currentSwatch}" aria-hidden="true"></span>
+    </button>
     <button
       type="button"
       class="theme-btn variant"
@@ -117,6 +134,14 @@
   .theme-btn:focus-visible {
     outline: 2px solid var(--fg);
     outline-offset: 2px;
+  }
+
+  .swatch {
+    display: block;
+    width: 0.9rem;
+    height: 0.9rem;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.18);
   }
 
   @media (prefers-reduced-motion: reduce) {

@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="light dark" />
-    <script>(function(){try{var t=localStorage.getItem('defter-theme');if(t!=='light'&&t!=='dark')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;var n=localStorage.getItem('defter-theme-name');if(n==='paper'||n==='sepia')document.documentElement.dataset.themeName=n;}catch(e){document.documentElement.dataset.theme='light';}})();</script>
+    <script>(function(){try{var P=['paper','sepia','windsor','zapier','clipboard','enveritas','salla','brave'];var t=localStorage.getItem('defter-theme');if(t!=='light'&&t!=='dark')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;var n=localStorage.getItem('defter-theme-name');if(P.indexOf(n)>-1)document.documentElement.dataset.themeName=n;else document.documentElement.dataset.themeName='paper';}catch(e){document.documentElement.dataset.theme='light';document.documentElement.dataset.themeName='paper';}})();</script>
     <link rel="icon" href="%sveltekit.assets%/favicon.svg" type="image/svg+xml" />
     <link rel="alternate" type="application/rss+xml" title="defter — RSS" href="%sveltekit.assets%/rss.xml" />
     <link rel="preload" href="%sveltekit.assets%/fonts/Montserrat-400-latin.woff2" as="font" type="font/woff2" crossorigin />

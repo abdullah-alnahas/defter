@@ -13,6 +13,15 @@ Pushes to `main` trigger `.github/workflows/deploy.yml`: builds with
 For a different host or repo name, override `BASE_PATH`, `PRERENDER_ORIGIN`,
 and `SITE_ORIGIN` in the workflow `env` block.
 
+## Themes
+
+Palette switcher in the top-end toggle bar cycles through eight palettes:
+`paper` (default), `sepia`, `windsor`, `zapier`, `clipboard`, `enveritas`,
+`salla`, `brave`. The non-paper/sepia palettes are distilled from the
+`cv_*.html` mockups in `/home/abdullah/Documents/hdd/career-ops/`. Each
+palette redefines `--bg`, `--fg`, `--muted`, `--rule`, `--accent` for both
+light and dark variants; layout, type, and spacing don't change.
+
 ## Stack
 
 - **SvelteKit + Svelte 5 (runes)** with `@sveltejs/adapter-static` — pure static prerender, no runtime server in production.
