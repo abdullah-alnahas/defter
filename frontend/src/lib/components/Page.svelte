@@ -1,20 +1,20 @@
 <script>
-  import SectionNav from './SectionNav.svelte';
   import Sidenotes from './Sidenotes.svelte';
   let {
     title,
     dir = 'ltr',
     lang = 'en',
     tldr = null,
-    headings = [],
     footnoteMap = {},
     children,
   } = $props();
 
   let tldrTriggerEl;
-</script>
 
-<SectionNav {headings} />
+  const isAr = lang === 'ar';
+  const tldrLabel = isAr ? 'خلاصة' : 'TL;DR';
+  const tldrReveal = isAr ? 'إظهار الخلاصة' : 'Reveal TL;DR';
+</script>
 
 <main id="main-content">
   <div class="page-frame">
@@ -34,8 +34,10 @@
               class="subtle-btn tldr-trigger"
               data-tldr-trigger
               bind:this={tldrTriggerEl}
-              aria-label="Reveal TL;DR"
-            >TL;DR</button>
+              {lang}
+              {dir}
+              aria-label={tldrReveal}
+            >{tldrLabel}</button>
           {/if}
         </div>
       {/if}
@@ -45,12 +47,12 @@
       </section>
 
       <footer class="closing" lang="ar" dir="rtl">
-        <p class="ayah">﴿سُبْحَانَ رَبِّكَ رَبِّ الْعِزَّةِ عَمَّا يَصِفُونَ * وَسَلَامٌ عَلَى الْمُرْسَلِينَ * وَالْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ﴾</p>
+        <p class="ayah">﴿سُبْحَانَ رَبِّكَ رَبِّ الْعِزَّةِ عَمَّا يَصِفُونَ <span class="ayah-num">١٨٠</span> وَسَلَامٌ عَلَى الْمُرْسَلِينَ <span class="ayah-num">١٨١</span> وَالْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ <span class="ayah-num">١٨٢</span>﴾</p>
         <p class="salawat">اللّهُمَّ صَلِّ على سيِّدِنا مُحمَّدٍ وعلى آلِ سيِّدِنا مُحمَّدٍ، كَما صَلَّيْتَ على سيِّدِنا إبراهيمَ وعلى آلِ سيِّدِنا إبراهيمَ، إنَّكَ حَميدٌ مَجيدٌ. اللّهُمَّ بارِكْ على سيِّدِنا مُحمَّدٍ وعلى آلِ سيِّدِنا مُحمَّدٍ، كَما بارَكْتَ على سيِّدِنا إبراهيمَ وعلى آلِ سيِّدِنا إبراهيمَ، إنَّكَ حَميدٌ مَجيدٌ.</p>
       </footer>
     </article>
 
-    <Sidenotes {footnoteMap} {tldr} />
+    <Sidenotes {footnoteMap} {tldr} tldrLabel={tldrLabel} articleLang={lang} articleDir={dir} />
   </div>
 </main>
 
@@ -127,6 +129,9 @@
     font-size: 1.5rem;
     line-height: 2.2;
     color: var(--fg);
+  }
+  .closing .ayah :global(.ayah-num) {
+    font-family: var(--quran-ayah-num);
   }
   .closing .salawat {
     font-size: 1rem;

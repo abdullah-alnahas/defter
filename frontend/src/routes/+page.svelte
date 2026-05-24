@@ -1,10 +1,10 @@
 <script>
   import Page from '$lib/components/Page.svelte';
   import { page } from '$app/state';
+  import { base } from '$app/paths';
   let { data } = $props();
   const pages = $derived(data.pages);
   const picked = $derived(pages.filter((p) => p.featured));
-  const recent = $derived(pages.slice(0, 3));
   const all = $derived(pages);
   const canonical = $derived(page.url.href);
 </script>
@@ -29,8 +29,8 @@
         <h2 class="block-h">Picked</h2>
         <ul class="page-list">
           {#each picked as p (p.slug)}
-            <li dir={p.dir} lang={p.lang}>
-              <a href={`/p/${p.slug}`}>{p.title}</a>
+            <li>
+              <a href={`${base}/p/${p.slug}`} dir={p.dir} lang={p.lang}>{p.title}</a>
               <time datetime={p.date}>{p.date}</time>
             </li>
           {/each}
@@ -39,30 +39,16 @@
     {/if}
 
     <section class="block">
-      <h2 class="block-h">Recent</h2>
+      <h2 class="block-h">All</h2>
       <ul class="page-list">
-        {#each recent as p (p.slug)}
-          <li dir={p.dir} lang={p.lang}>
-            <a href={`/p/${p.slug}`}>{p.title}</a>
+        {#each all as p (p.slug)}
+          <li>
+            <a href={`${base}/p/${p.slug}`} dir={p.dir} lang={p.lang}>{p.title}</a>
             <time datetime={p.date}>{p.date}</time>
           </li>
         {/each}
       </ul>
     </section>
-
-    {#if all.length > recent.length}
-      <section class="block">
-        <h2 class="block-h">All</h2>
-        <ul class="page-list">
-          {#each all as p (p.slug)}
-            <li dir={p.dir} lang={p.lang}>
-              <a href={`/p/${p.slug}`}>{p.title}</a>
-              <time datetime={p.date}>{p.date}</time>
-            </li>
-          {/each}
-        </ul>
-      </section>
-    {/if}
   {/if}
 </Page>
 
@@ -87,8 +73,21 @@
     border-bottom: 1px solid var(--rule);
   }
   .page-list li:last-child { border-bottom: none; }
-  .page-list a { color: var(--fg); text-decoration: none; }
+  .page-list a {
+    color: var(--fg);
+    text-decoration: none;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    text-align: start;
+  }
   .page-list a:hover, .page-list a:focus-visible { text-decoration: underline; }
-  time { color: var(--muted); font-size: 0.88rem; font-variant-numeric: tabular-nums; }
+  /* Date stays in Latin body font even on Arabic items (li is LTR, but inherit shouldn't switch). */
+  time {
+    color: var(--muted);
+    font-size: 0.88rem;
+    font-variant-numeric: tabular-nums;
+    font-family: var(--body);
+    flex: 0 0 auto;
+  }
   .muted { color: var(--muted); }
 </style>

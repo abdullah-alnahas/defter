@@ -10,10 +10,13 @@ const config = {
       fallback: undefined,
       strict: true,
     }),
+    paths: {
+      base: process.env.BASE_PATH ?? '',
+    },
     prerender: {
       handleHttpError: 'fail',
       handleMissingId: 'fail',
-      origin: process.env.SITE_ORIGIN || 'http://127.0.0.1:8787',
+      origin: process.env.PRERENDER_ORIGIN || 'http://127.0.0.1:8787',
     },
     /** Inline all CSS into the page (no separate render-blocking stylesheet requests). */
     inlineStyleThreshold: Infinity,

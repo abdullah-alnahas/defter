@@ -22,7 +22,6 @@
   dir={p.dir}
   lang={p.lang}
   tldr={p.tldr}
-  headings={p.headings}
   footnoteMap={p.footnoteMap}
 >
   {@html p.body}

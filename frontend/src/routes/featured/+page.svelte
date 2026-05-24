@@ -1,6 +1,7 @@
 <script>
   import Page from '$lib/components/Page.svelte';
   import { page } from '$app/state';
+  import { base } from '$app/paths';
   let { data } = $props();
   const featured = $derived(data.pages.filter((p) => p.featured));
   const canonical = $derived(page.url.href);
@@ -24,12 +25,12 @@
     <ul class="cards">
       {#each featured as p (p.slug)}
         <li class="card" dir={p.dir} lang={p.lang}>
-          <h2><a href={`/p/${p.slug}`}>{p.title}</a></h2>
+          <h2><a href={`${base}/p/${p.slug}`}>{p.title}</a></h2>
           {#if p.tldr}
             <p class="desc">{p.tldr}</p>
           {/if}
           <p class="links">
-            <a href={`/p/${p.slug}`}>Read</a>
+            <a href={`${base}/p/${p.slug}`}>Read</a>
             {#if p.external}
               <a href={p.external} rel="noopener">External ↗</a>
             {/if}

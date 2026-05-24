@@ -1,22 +1,17 @@
 <script>
   /**
-   * Right-margin aside — always visible.
-   * Holds the primary nav links + the global Pin/Unpin-all sidenote toggle.
+   * Left-margin aside — primary nav links.
+   * (Pin/Unpin-all sidenote toggle lives in ThemeToggle bar.)
    */
-  import { bus, pinAll, unpinAll } from '../sidenote-bus.svelte.js';
-
+  import { base } from '$app/paths';
   const links = [
-    { href: '/', label: 'Blog' },
-    { href: '/featured', label: 'Featured' },
-    { href: '/p/cv', label: 'CV' },
+    { href: `${base}/`, label: 'Blog' },
+    { href: `${base}/featured`, label: 'Featured' },
+    { href: `${base}/p/cv`, label: 'CV' },
     { href: 'https://github.com/abdullah-alnahas', label: 'GitHub', external: true },
     { href: 'https://www.linkedin.com/in/abdullah-al-nahas-537bb967/', label: 'LinkedIn', external: true },
-    { href: '/rss.xml', label: 'RSS', type: 'application/rss+xml' },
+    { href: `${base}/rss.xml`, label: 'RSS', type: 'application/rss+xml' },
   ];
-
-  function onToggle() {
-    if (bus.anyPinned) unpinAll(); else pinAll();
-  }
 </script>
 
 <aside class="margin-aside" aria-label="Site navigation">
@@ -25,31 +20,20 @@
       <li>
         <a
           href={l.href}
-          rel={l.external ? 'me noopener' : undefined}
+          target={l.external ? '_blank' : undefined}
+          rel={l.external ? 'me noopener noreferrer external' : undefined}
           type={l.type}
         >{l.label}</a>
       </li>
     {/each}
   </ul>
-
-  {#if bus.total > 0}
-    <button
-      type="button"
-      class="subtle-btn pin-all"
-      class:is-on={bus.anyPinned}
-      onclick={onToggle}
-      aria-pressed={bus.anyPinned}
-      aria-label={bus.anyPinned ? 'Unpin all sidenotes' : 'Pin all sidenotes'}
-      title={bus.anyPinned ? 'Unpin all sidenotes' : 'Pin all sidenotes'}
-    >{bus.anyPinned ? 'Unpin all' : 'Pin all'}</button>
-  {/if}
 </aside>
 
 <style>
   .margin-aside {
     position: fixed;
     top: 4rem;
-    inset-inline-end: 1.25rem;
+    inset-inline-start: 1.25rem;
     width: 9rem;
     display: flex;
     flex-direction: column;
@@ -65,7 +49,7 @@
     flex-direction: column;
     gap: 0.4rem;
     font-size: 0.82rem;
-    text-align: end;
+    text-align: start;
   }
   li { margin: 0; }
   a {
@@ -85,8 +69,6 @@
     outline-offset: 2px;
     border-bottom-color: transparent;
   }
-
-  .pin-all { align-self: end; }
 
   /* Hide aside on very narrow viewports — nav is still reachable via the inline page list links. */
   @media (max-width: 56rem) {

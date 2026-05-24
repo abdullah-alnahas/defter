@@ -1,4 +1,6 @@
 <script>
+  import { bus, pinAll, unpinAll } from '../sidenote-bus.svelte.js';
+
   let theme = $state('light');
   let themeName = $state('paper');
   let mounted = $state(false);
@@ -26,10 +28,30 @@
     try { localStorage.setItem('defter-theme-name', next); } catch {}
     themeName = next;
   }
+
+  function togglePin() {
+    if (bus.anyPinned) unpinAll(); else pinAll();
+  }
 </script>
 
 {#if mounted}
   <div class="theme-bar" role="group" aria-label="Theme controls">
+    {#if bus.total > 0}
+      <button
+        type="button"
+        class="theme-btn pin"
+        class:is-on={bus.anyPinned}
+        aria-pressed={bus.anyPinned}
+        aria-label={bus.anyPinned ? 'Unpin all sidenotes' : 'Pin all sidenotes'}
+        title={bus.anyPinned ? 'Unpin all sidenotes' : 'Pin all sidenotes'}
+        onclick={togglePin}
+      >
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 17v5" />
+          <path d="M9 10.76V6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4.76a2 2 0 0 0 1.11 1.79l1.78.9A2 2 0 0 1 19 15.24V16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-.76a2 2 0 0 1 1.11-1.79l1.78-.9A2 2 0 0 0 9 10.76Z" />
+        </svg>
+      </button>
+    {/if}
     <button
       type="button"
       class="theme-btn palette"
@@ -67,7 +89,6 @@
     z-index: 10;
   }
 
-  /* Subtle via colour (muted on bg = 6.4:1, AA-pass), not opacity. */
   .theme-btn {
     width: 2rem;
     height: 2rem;
@@ -87,7 +108,8 @@
   }
   .theme-bar:hover .theme-btn,
   .theme-btn:hover,
-  .theme-btn:focus-visible {
+  .theme-btn:focus-visible,
+  .theme-btn.is-on {
     color: var(--fg);
     border-color: var(--rule);
     background: var(--bg);

@@ -17,8 +17,8 @@
   import { onMount } from 'svelte';
   import { configure, setBus, reset } from '../sidenote-bus.svelte.js';
 
-  /** @type {{ footnoteMap: Record<string, {num:string,html:string}>, tldr: string|null }} */
-  let { footnoteMap = {}, tldr = null } = $props();
+  /** @type {{ footnoteMap: Record<string, {num:string,html:string}>, tldr: string|null, tldrLabel: string, articleLang: string, articleDir: string }} */
+  let { footnoteMap = {}, tldr = null, tldrLabel = 'TL;DR', articleLang = 'en', articleDir = 'ltr' } = $props();
 
   let marginEl;
 
@@ -26,10 +26,12 @@
     const note = document.createElement('aside');
     note.className = tldrText != null ? 'sn-margin is-tldr' : 'sn-margin';
     note.setAttribute('role', 'note');
+    note.lang = articleLang;
+    note.dir = articleDir;
     if (tldrText != null) {
       const label = document.createElement('span');
       label.className = 'sn-label';
-      label.textContent = 'TL;DR';
+      label.textContent = tldrLabel;
       note.appendChild(label);
       const p = document.createElement('p');
       p.textContent = tldrText;

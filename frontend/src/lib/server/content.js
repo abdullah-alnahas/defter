@@ -27,6 +27,14 @@ m.use({
       }
       return false;
     },
+    link(token) {
+      const { href, title, tokens } = token;
+      const text = this.parser.parseInline(tokens);
+      const titleAttr = title ? ` title="${escapeHtml(title)}"` : '';
+      const isExternal = /^https?:\/\//i.test(href);
+      const extra = isExternal ? ' target="_blank" rel="noopener noreferrer external"' : '';
+      return `<a href="${href}"${titleAttr}${extra}>${text}</a>`;
+    },
   },
 });
 
@@ -83,6 +91,21 @@ function preprocessDirectives(md) {
  * Returns { html, footnoteMap: { [label]: { num, html } } } so the runtime
  * can populate the margin stack from a side-channel rather than inlining bodies.
  */
+/**
+ * Localizes the marked-footnote endnote section heading.
+ * Default output: <section class="footnotes" data-footnotes><h2 ... id="footnote-label">Footnotes</h2>...
+ * We swap the heading text (and tag lang/dir) based on page language.
+ */
+function localizeFootnotes(html, lang, dir) {
+  const labels = { ar: 'الحواشي', tr: 'Dipnotlar' };
+  const label = labels[lang];
+  if (!label) return html;
+  return html.replace(
+    /<section class="footnotes" data-footnotes>\s*<h2([^>]*)>Footnotes<\/h2>/,
+    `<section class="footnotes" data-footnotes lang="${lang}" dir="${dir}"><h2$1>${label}</h2>`
+  );
+}
+
 function extractFootnotes(html) {
   const footnoteMap = {};
   const sectionMatch = html.match(/<section class="footnotes" data-footnotes>([\s\S]*?)<\/section>/);
@@ -102,15 +125,6 @@ function extractFootnotes(html) {
     return `<sup class="fn-ref" data-fn-id="${label}">${aTag}</sup>`;
   });
   return { html: out, footnoteMap };
-}
-
-function extractHeadings(html) {
-  const out = [];
-  const pattern = /<h([23])\s+id="([^"]+)"[^>]*>([\s\S]*?)<\/h\1>/g;
-  for (const g of html.matchAll(pattern)) {
-    out.push({ level: parseInt(g[1], 10), id: g[2], text: g[3].replace(/<[^>]+>/g, '').trim() });
-  }
-  return out;
 }
 
 export function extractDescription(body, fallback = '') {
@@ -136,7 +150,8 @@ export async function loadAllPages() {
     const raw = await readFile(path.join(contentDir, f), 'utf8');
     const { meta, body: bodyMarkdown } = parseFrontmatter(raw);
     const rawHtml = marked.parse(preprocessDirectives(bodyMarkdown));
-    const { html, footnoteMap } = extractFootnotes(rawHtml);
+    const localizedHtml = localizeFootnotes(rawHtml, meta.lang, meta.dir);
+    const { html, footnoteMap } = extractFootnotes(localizedHtml);
     pages.push({
       slug,
       title: meta.title,
@@ -148,7 +163,6 @@ export async function loadAllPages() {
       external: meta.external || null,
       body: html,
       footnoteMap,
-      headings: extractHeadings(html),
       description: extractDescription(bodyMarkdown, meta.title),
     });
   }
@@ -164,5 +178,5 @@ export async function loadPage(slug) {
 
 export async function listPagesMeta() {
   const all = await loadAllPages();
-  return all.map(({ body, footnoteMap, headings, ...rest }) => rest);
+  return all.map(({ body, footnoteMap, ...rest }) => rest);
 }

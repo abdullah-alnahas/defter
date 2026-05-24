@@ -1,6 +1,16 @@
-# defter — status
+# kalem-and-defter — status
 
-دفتر. Personal site. Vision: `concept.txt`.
+قلم ودفتر. Personal site. Live: https://abdullah-alnahas.github.io/kalem-and-defter/. Vision: `concept.txt`.
+
+## Deploy
+
+GitHub Pages via `.github/workflows/deploy.yml`. Build runs with
+`BASE_PATH=/kalem-and-defter`, `PRERENDER_ORIGIN=https://abdullah-alnahas.github.io`,
+`SITE_ORIGIN=https://abdullah-alnahas.github.io/kalem-and-defter`. SvelteKit
+`paths.base` carries the prefix through every internal link, asset URL, and
+canonical href. `static/.nojekyll` keeps GH Pages from filtering `_app/`.
+Font `@font-face` declarations live in `app.html` so `%sveltekit.assets%` can
+prepend the base path (CSS string URLs aren't rewritten by Vite).
 
 ## Stack
 
@@ -13,9 +23,9 @@
 ## Layout & nav
 
 - **Symmetric 3-column grid** (`Page.svelte`): equal-width left margin / body (capped at `--measure: 34rem`) / equal-width right margin (`--margin-col: 13rem`). Body is centred.
-- **No top navbar.** Nav lives in a persistent right-margin aside (`MarginAside.svelte`, fixed top-right): Blog · Featured · CV · GitHub · LinkedIn · RSS. Always visible, dim by default, brightens on hover.
-- **Theme toggle** (`ThemeToggle.svelte`): fixed top-right, palette (P/S) + variant (sun/moon).
-- **Back-to-top button** (`BackToTop.svelte`): fixed bottom-right, dim arrow always visible; hover/focus reveals "Back to top" label (max-width transition, no layout cost).
+- **No top navbar.** Nav lives in a persistent left-margin aside (`MarginAside.svelte`, fixed top-start): Blog · Featured · CV · GitHub · LinkedIn · RSS. Always visible, dim by default, brightens on hover.
+- **Theme toggle bar** (`ThemeToggle.svelte`): fixed top-end, holds three icon buttons — pin-all (only when sidenotes exist on the page), palette (P/S), variant (sun/moon).
+- **Back-to-top button** (`BackToTop.svelte`): fixed bottom-end, dim arrow + "Back to top" label always visible.
 - **Skip-link** at top for keyboard users.
 - Narrow viewports (≤ 56rem): aside hides; nav remains reachable via per-page lists; sidenotes collapse to flow below the body.
 
@@ -24,32 +34,32 @@
 - **Single mandatory wrapper** (`Page.svelte`). Every page = basmalah + hamd (Quran font, full diacritics) + opening salawat (regular Arabic, full diacritics); closing = Ayah (Quran font) + Ibrahimi salawat. Non-negotiable per concept.
 - **RTL/LTR per page** via frontmatter `dir`.
 - **Theme:** two axes — `[data-theme=light|dark]` (variant) × `[data-theme-name=paper|sepia]` (palette) = 4 palettes. Inline blocking `<head>` script reads `localStorage['defter-theme']` + `localStorage['defter-theme-name']`, falls back to `prefers-color-scheme` for variant. No FOUC.
-- **Paper palette** (current default): light `#FFFFF8` bg / `#181818` fg ; dark `#1F2530` bg / `#D6CFBB` fg. `--muted` chosen to clear 5:1 contrast against bg on both variants.
+- **Paper palette** (current default): light `#FAF8F2` bg / `#1E252D` fg ; dark `#1F2530` bg / `#D6CFBB` fg. `--muted` chosen to clear 5:1 contrast against bg on both variants.
 - **Sepia palette** kept untouched.
 - **Slug guard:** SvelteKit `entries()` enumerates valid slugs at build; unknown slugs become 404 at prerender time.
 - **Quality bar:** desktop Lighthouse 100×4 every route. Mobile: 100 across A11y / BP / SEO; Performance ≥ 99 (single-bundle hydration on simulated Slow 4G dips FCP score to 0.98 — within "good" Core Web Vitals but rounded short of perfect). CI enforces.
 
 ## Typography
 
-- **Body / UI:** **Montserrat** (self-hosted woff2, weights 400 + 500 + 600, `latin` + `latin-ext` subsets, total ≈ 150 KB across all 6 files but each weight × subset is fetched on demand — only the one or two needed for the current page hit the wire).
-- **Quran:** **UthmanTN** (preloaded, subset to Arabic blocks only, 45.5 KB woff2).
-- **Regular Arabic:** Amiri / Scheherazade New / Noto Naskh Arabic stack.
+- **Body + nav:** **Montserrat** (self-hosted woff2, weights 400 + 500 + 600, `latin` + `latin-ext` subsets, fetched on demand). Single Latin family throughout — no separate UI font.
+- **Quran:** **UthmanTN** for Arabic text + ornate ayah brackets ﴿ ﴾ (matches the look of the printed mushaf). **UthmanicHafs** layered on top via `var(--quran-ayah-num)` only inside `<span class="ayah-num">` — its GSUB auto-wraps bare Arabic-Indic digit sequences in the rosette glyph, so the closing ayah uses bare `١٨٠ ١٨١ ١٨٢` from Saffat 180–182, no explicit U+06DD prefix needed.
+- **Regular Arabic:** **Noto Naskh Arabic** (self-hosted), with Amiri / Scheherazade fallback.
 - `font-display: optional` on every web font — first paint uses fallback, web font swaps in only if it's ready within ~100 ms. Eliminates CLS entirely (verified 0.000 on every measured route).
 
 ## Sidenotes + TL;DR
 
-One mental model, one surface.
+One mental model, one surface. Localized per article: the TL;DR trigger button label and the margin-note label are Arabic ("خلاصة") on `lang="ar"` pages and "TL;DR" otherwise. Margin notes carry the article's `lang`/`dir` so `*:lang(ar)` picks the Arabic font stack — body, sidenote text, and TL;DR text all share the same family. The endnote section's "Footnotes" heading is localized too (`الحواشي` / `Dipnotlar` / `Footnotes`).
 
 - **Each footnote ref** spawns its own invisible margin slot (`.sn-margin`) at the ref's vertical position. Float-down on collision so multiple notes stack without overlap.
 - **Hover ref or hover note** → reveal (opacity 0 → 1; no layout shift).
 - **Click ref** → pin (stays revealed until clicked again or `Esc`).
 - **Same label opened twice** → two separate slots (per-occurrence identity).
 - **TL;DR** uses the same surface: a small dim **"TL;DR"** button next to the title spawns a margin note. Hover the button → preview. Click → pin.
-- **Pin/Unpin all** toggle in the right margin aside flips every sidenote (and TL;DR) at once. Label morphs `Pin all ↔ Unpin all` based on current state.
+- **Pin/Unpin all** pin-icon toggle lives in the theme bar (top-end), appears only when the page actually has sidenotes; flips every sidenote (and TL;DR) at once.
 - **Endnote list** always present after the article body (canonical reading affordance for a11y / print / readers).
 - **Narrow viewports** (≤ 56rem): notes flow below the body in document order (still hidden until hover/tap of their ref).
 
-Implemented in `src/lib/sidenote-bus.svelte.js` (tiny pub/sub), `src/lib/components/Sidenotes.svelte` (per-page mount: scans refs, creates margin slots, manages hover+pin), `src/lib/components/MarginAside.svelte` (nav + pin-all), `src/lib/components/BackToTop.svelte`. Verified end-to-end with Playwright: hover→reveal, click→pin, click→unpin, Esc→clear, pin-all↔unpin-all flips, narrow stacking, TL;DR via title button, back-to-top scrolls smoothly, console clean.
+Implemented in `src/lib/sidenote-bus.svelte.js` (tiny pub/sub), `src/lib/components/Sidenotes.svelte` (per-page mount: scans refs, creates margin slots, manages hover+pin), `src/lib/components/MarginAside.svelte` (nav only), `src/lib/components/ThemeToggle.svelte` (palette + variant + pin-all), `src/lib/components/BackToTop.svelte`. Verified end-to-end with Playwright: hover→reveal, click→pin, click→unpin, Esc→clear, pin-all↔unpin-all flips, narrow stacking, TL;DR via title button, back-to-top scrolls smoothly, console clean.
 
 ## Authoring
 
