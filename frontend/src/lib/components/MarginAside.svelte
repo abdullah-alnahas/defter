@@ -15,7 +15,7 @@
     { href: `${base}/p/about`, label: 'About' },
     { href: 'https://github.com/abdullah-alnahas', label: 'GitHub', external: true },
     { href: 'https://www.linkedin.com/in/abdullah-al-nahas-537bb967/', label: 'LinkedIn', external: true },
-    { href: `${base}/rss.xml`, label: 'RSS', type: 'application/rss+xml' },
+    { href: `${base}/rss.xml`, label: 'RSS', type: 'application/rss+xml', external: true },
   ];
 </script>
 
