@@ -12,11 +12,13 @@
 
 /* Theme palettes × variant.
    Each palette defines bg / fg / muted / rule / accent for both light and dark.
-   The CV page uses --accent for headings and links; other pages tolerate any palette.
-   Palettes are derived from /home/abdullah/Documents/hdd/career-ops/cv_*.html
-   (Windsor, Zapier, Clipboard, Enveritas, Salla, Brave) plus the original
-   Paper + Sepia. The current design's "spirit" (warm paper, generous rule lines,
-   muted secondary text) is preserved — only the colour values rotate. */
+   Palette names are evocative (paper, ink, ember, …) — never tied to a vendor
+   or product. Eight palettes were distilled from CV mockups
+   (/home/abdullah/Documents/hdd/career-ops/cv_*.html); five more (slate,
+   forest, cream, mono, midnight) are imported from the sibling design system
+   in career-ops/style-files/svelte-styles.css. The site's "spirit" (warm
+   paper, generous rule lines, muted secondary text) is preserved — only the
+   colour values rotate. */
 :root,
 :root[data-theme='light'],
 :root[data-theme-name='paper'],
@@ -36,6 +38,7 @@
   --accent: #D6CFBB;
   color-scheme: dark;
 }
+/* Sepia — antique brown on cream. */
 :root[data-theme-name='sepia'],
 :root[data-theme-name='sepia'][data-theme='light'] {
   --bg: #f5ecd9;
@@ -52,16 +55,16 @@
   --accent: #d6a86a;
   color-scheme: dark;
 }
-/* Windsor — sky-blue / deep navy (from cv_windsor.html). */
-:root[data-theme-name='windsor'],
-:root[data-theme-name='windsor'][data-theme='light'] {
+/* Ink — royal blue on cool off-white (was "windsor"). */
+:root[data-theme-name='ink'],
+:root[data-theme-name='ink'][data-theme='light'] {
   --bg: #f4f8fc;
   --fg: #0e2640;
   --muted: #5a6b80;
   --rule: #e3edf7;
   --accent: #1e3a8a;
 }
-:root[data-theme-name='windsor'][data-theme='dark'] {
+:root[data-theme-name='ink'][data-theme='dark'] {
   --bg: #0e2640;
   --fg: #cfe0f0;
   --muted: #7a90aa;
@@ -69,16 +72,16 @@
   --accent: #6ec7ff;
   color-scheme: dark;
 }
-/* Zapier — automation orange on warm off-white (from cv_zapier.html). */
-:root[data-theme-name='zapier'],
-:root[data-theme-name='zapier'][data-theme='light'] {
+/* Ember — burnt orange on warm off-white (was "zapier"). */
+:root[data-theme-name='ember'],
+:root[data-theme-name='ember'][data-theme='light'] {
   --bg: #f5f3eb;
   --fg: #201515;
   --muted: #6a5b5a;
   --rule: #e5e2d9;
   --accent: #ff4f00;
 }
-:root[data-theme-name='zapier'][data-theme='dark'] {
+:root[data-theme-name='ember'][data-theme='dark'] {
   --bg: #201515;
   --fg: #f5ece6;
   --muted: #b69e9a;
@@ -86,16 +89,16 @@
   --accent: #ff7a40;
   color-scheme: dark;
 }
-/* Clipboard — raspberry on warm beige (from cv_clipboard.html). */
-:root[data-theme-name='clipboard'],
-:root[data-theme-name='clipboard'][data-theme='light'] {
+/* Rose — raspberry on warm beige (was "clipboard"). */
+:root[data-theme-name='rose'],
+:root[data-theme-name='rose'][data-theme='light'] {
   --bg: #E9E4DA;
   --fg: #1F2430;
   --muted: #4E5561;
   --rule: #D8D1C0;
   --accent: #C12A58;
 }
-:root[data-theme-name='clipboard'][data-theme='dark'] {
+:root[data-theme-name='rose'][data-theme='dark'] {
   --bg: #2a241e;
   --fg: #efe7d6;
   --muted: #a89c84;
@@ -103,16 +106,16 @@
   --accent: #e84a78;
   color-scheme: dark;
 }
-/* Enveritas — cool slate + deep navy accent (from cv_enveritas.html). */
-:root[data-theme-name='enveritas'],
-:root[data-theme-name='enveritas'][data-theme='light'] {
+/* Harbor — deep navy on cool light grey (was "enveritas"). */
+:root[data-theme-name='harbor'],
+:root[data-theme-name='harbor'][data-theme='light'] {
   --bg: #f6f7f9;
   --fg: #161a26;
   --muted: #565d72;
   --rule: #e5e7ed;
   --accent: #002060;
 }
-:root[data-theme-name='enveritas'][data-theme='dark'] {
+:root[data-theme-name='harbor'][data-theme='dark'] {
   --bg: #161a26;
   --fg: #e5e7ed;
   --muted: #a4aab7;
@@ -120,16 +123,16 @@
   --accent: #6e8cff;
   color-scheme: dark;
 }
-/* Salla — warm gold on cream (from cv_salla.html). */
-:root[data-theme-name='salla'],
-:root[data-theme-name='salla'][data-theme='light'] {
+/* Amber — warm gold on cream (was "salla"). */
+:root[data-theme-name='amber'],
+:root[data-theme-name='amber'][data-theme='light'] {
   --bg: #fdf9ed;
   --fg: #2a2419;
   --muted: #7a6a48;
   --rule: #ece1c2;
   --accent: #c08a18;
 }
-:root[data-theme-name='salla'][data-theme='dark'] {
+:root[data-theme-name='amber'][data-theme='dark'] {
   --bg: #221c10;
   --fg: #f1e7c8;
   --muted: #a89a72;
@@ -137,21 +140,106 @@
   --accent: #FFD21E;
   color-scheme: dark;
 }
-/* Brave — pink/coral/violet accent (from cv_brave.html). */
-:root[data-theme-name='brave'],
-:root[data-theme-name='brave'][data-theme='light'] {
+/* Magenta — vivid pink on near-white (was "brave"). */
+:root[data-theme-name='magenta'],
+:root[data-theme-name='magenta'][data-theme='light'] {
   --bg: #fffafe;
   --fg: #1a1a2e;
   --muted: #6a5872;
   --rule: #f0d8e8;
   --accent: #d9156f;
 }
-:root[data-theme-name='brave'][data-theme='dark'] {
+:root[data-theme-name='magenta'][data-theme='dark'] {
   --bg: #1a1a2e;
   --fg: #ecebf0;
   --muted: #8a85a2;
   --rule: #2a2a3e;
   --accent: #ff1893;
+  color-scheme: dark;
+}
+/* Slate — cool blue-grey, imported from career-ops/style-files/svelte-styles.css. */
+:root[data-theme-name='slate'],
+:root[data-theme-name='slate'][data-theme='light'] {
+  --bg: oklch(0.97 0.005 250);
+  --fg: oklch(0.24 0.020 250);
+  --muted: oklch(0.50 0.012 250);
+  --rule: oklch(0.90 0.010 250);
+  --accent: oklch(0.55 0.16 250);
+}
+:root[data-theme-name='slate'][data-theme='dark'] {
+  --bg: oklch(0.18 0.015 250);
+  --fg: oklch(0.94 0.008 250);
+  --muted: oklch(0.62 0.012 250);
+  --rule: oklch(0.32 0.015 250);
+  --accent: oklch(0.78 0.13 250);
+  color-scheme: dark;
+}
+/* Forest — green on warm green-tinted paper, imported from svelte-styles.css. */
+:root[data-theme-name='forest'],
+:root[data-theme-name='forest'][data-theme='light'] {
+  --bg: oklch(0.97 0.012 145);
+  --fg: oklch(0.24 0.020 145);
+  --muted: oklch(0.50 0.014 145);
+  --rule: oklch(0.90 0.015 145);
+  --accent: oklch(0.50 0.13 150);
+}
+:root[data-theme-name='forest'][data-theme='dark'] {
+  --bg: oklch(0.19 0.018 150);
+  --fg: oklch(0.94 0.010 150);
+  --muted: oklch(0.62 0.014 150);
+  --rule: oklch(0.32 0.018 150);
+  --accent: oklch(0.78 0.13 150);
+  color-scheme: dark;
+}
+/* Cream — peach on cream, imported from svelte-styles.css. */
+:root[data-theme-name='cream'],
+:root[data-theme-name='cream'][data-theme='light'] {
+  --bg: oklch(0.97 0.025 80);
+  --fg: oklch(0.26 0.025 50);
+  --muted: oklch(0.52 0.018 50);
+  --rule: oklch(0.89 0.025 70);
+  --accent: oklch(0.58 0.16 35);
+}
+:root[data-theme-name='cream'][data-theme='dark'] {
+  --bg: oklch(0.20 0.020 50);
+  --fg: oklch(0.94 0.015 80);
+  --muted: oklch(0.62 0.015 70);
+  --rule: oklch(0.32 0.020 60);
+  --accent: oklch(0.78 0.13 35);
+  color-scheme: dark;
+}
+/* Mono — pure greyscale, imported from svelte-styles.css. */
+:root[data-theme-name='mono'],
+:root[data-theme-name='mono'][data-theme='light'] {
+  --bg: oklch(0.98 0 0);
+  --fg: oklch(0.18 0 0);
+  --muted: oklch(0.50 0 0);
+  --rule: oklch(0.88 0 0);
+  --accent: oklch(0.30 0 0);
+}
+:root[data-theme-name='mono'][data-theme='dark'] {
+  --bg: oklch(0.16 0 0);
+  --fg: oklch(0.96 0 0);
+  --muted: oklch(0.62 0 0);
+  --rule: oklch(0.32 0 0);
+  --accent: oklch(0.92 0 0);
+  color-scheme: dark;
+}
+/* Midnight — violet on cool near-white, imported from svelte-styles.css. */
+:root[data-theme-name='midnight'],
+:root[data-theme-name='midnight'][data-theme='light'] {
+  --bg: oklch(0.96 0.012 290);
+  --fg: oklch(0.24 0.030 280);
+  --muted: oklch(0.52 0.020 280);
+  --rule: oklch(0.89 0.020 290);
+  --accent: oklch(0.55 0.18 290);
+}
+:root[data-theme-name='midnight'][data-theme='dark'] {
+  --bg: oklch(0.16 0.030 280);
+  --fg: oklch(0.94 0.012 290);
+  --muted: oklch(0.62 0.018 290);
+  --rule: oklch(0.32 0.025 280);
+  --accent: oklch(0.82 0.14 290);
   color-scheme: dark;
 }
 
@@ -178,6 +266,20 @@ html, body {
 }
 
 *:lang(ar) { font-family: var(--arabic); }
+
+/* ============================================================
+   Text selection — tied to active palette via --accent / --bg.
+   ::selection ignores inherited color but reads CSS variables off
+   the originating element, so palette switches update in place.
+   ============================================================ */
+::selection {
+  background: var(--accent);
+  color: var(--bg);
+}
+::-moz-selection {
+  background: var(--accent);
+  color: var(--bg);
+}
 
 /* ============================================================
    Footnote refs (inline)

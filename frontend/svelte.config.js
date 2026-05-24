@@ -17,6 +17,9 @@ const config = {
       handleHttpError: 'fail',
       handleMissingId: 'fail',
       origin: process.env.PRERENDER_ORIGIN || 'http://127.0.0.1:8787',
+      /* /p/cv/print isn't reached by the crawler (opened by JS from the
+         about page's download modal with query params), so seed it. */
+      entries: ['*', '/p/cv/print'],
     },
     /** Inline all CSS into the page (no separate render-blocking stylesheet requests). */
     inlineStyleThreshold: Infinity,

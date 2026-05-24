@@ -23,8 +23,9 @@ prepend the base path (CSS string URLs aren't rewritten by Vite).
 ## Layout & nav
 
 - **Symmetric 3-column grid** (`Page.svelte`): equal-width left margin / body (capped at `--measure: 34rem`) / equal-width right margin (`--margin-col: 13rem`). Body is centred.
-- **No top navbar.** Nav lives in a persistent left-margin aside (`MarginAside.svelte`, fixed top-start): Blog · Featured · CV · GitHub · LinkedIn · RSS. Always visible, dim by default, brightens on hover.
-- **Theme toggle bar** (`ThemeToggle.svelte`): fixed top-end, holds three icon buttons — pin-all (only when sidenotes exist on the page), palette (round swatch matching the current palette's `--accent`; cycles through paper / sepia / windsor / zapier / clipboard / enveritas / salla / brave), variant (sun/moon).
+- **No top navbar.** Nav lives in a persistent left-margin aside (`MarginAside.svelte`, fixed top-start): Blog · Featured · About · GitHub · LinkedIn · RSS. Always visible, dim by default, brightens on hover.
+- **Theme toggle bar** (`ThemeToggle.svelte`): fixed top-end, holds three icon buttons — pin-all (only when sidenotes exist on the page), palette (round swatch matching the current palette's `--accent`; opens a popover containing a radial `PaletteDial`), variant (sun/moon).
+- **Palette dial** (`PaletteDial.svelte`): shared radial picker. 13 dots arranged on the circumference of an invisible circle, walking clockwise from 12 o'clock through a hue-ordered sequence — paper → sepia → cream → ember → amber → forest → slate → ink → harbor → midnight → magenta → rose → mono → back to paper. Each dot is anchored to the radius by a `translate()` and never scales or grows out of the circle; the active palette is mirrored in the centre as a large swatch + label and is marked on its own dot with an inset `var(--bg)` pip (radio-style). On hover, sibling dots dim so the focused dot reads first.
 - **Back-to-top button** (`BackToTop.svelte`): fixed bottom-end, dim arrow + "Back to top" label always visible.
 - **Skip-link** at top for keyboard users.
 - Narrow viewports (≤ 56rem): aside hides; nav remains reachable via per-page lists; sidenotes collapse to flow below the body.
@@ -33,9 +34,13 @@ prepend the base path (CSS string URLs aren't rewritten by Vite).
 
 - **Single mandatory wrapper** (`Page.svelte`). Every page = basmalah + hamd (Quran font, full diacritics) + opening salawat (regular Arabic, full diacritics); closing = Ayah (Quran font) + Ibrahimi salawat. Non-negotiable per concept.
 - **RTL/LTR per page** via frontmatter `dir`.
-- **Theme:** two axes — `[data-theme=light|dark]` (variant) × `[data-theme-name=…]` (palette). Palettes: `paper` (default), `sepia`, `windsor`, `zapier`, `clipboard`, `enveritas`, `salla`, `brave` — each defines `--bg`, `--fg`, `--muted`, `--rule`, `--accent` for both light and dark. Inline blocking `<head>` script reads `localStorage['defter-theme']` + `localStorage['defter-theme-name']`, validates the palette name against the allowed list, falls back to `prefers-color-scheme` for variant. No FOUC.
-- **Palette origins:** windsor / zapier / clipboard / enveritas / salla / brave are distilled from `cv_*.html` mockups in `/home/abdullah/Documents/hdd/career-ops/`. Only the colour values cross the boundary; no copy or markup. The site's spirit (warm canvas, generous rule lines, muted secondary text) is preserved across all palettes — only `--bg / --fg / --muted / --rule / --accent` rotate.
-- **CV page** (`/p/cv`): single source of truth in `frontend/src/routes/p/cv/+page.svelte`, content distilled from `cv-generic.md` in career-ops. Personal contact info that wasn't already public (phone number) stays out of the repo. `--accent` drives headings + links so each palette tints the CV without changing layout.
+- **Theme:** two axes — `[data-theme=light|dark]` (variant) × `[data-theme-name=…]` (palette). 13 palettes: `paper` (default), `sepia`, `cream`, `ember`, `amber`, `forest`, `slate`, `ink`, `harbor`, `midnight`, `magenta`, `rose`, `mono`. Each defines `--bg`, `--fg`, `--muted`, `--rule`, `--accent` for both light and dark. Inline blocking `<head>` script reads `localStorage['defter-theme']` + `localStorage['defter-theme-name']`, migrates legacy palette ids (`windsor → ink`, `zapier → ember`, `clipboard → rose`, `enveritas → harbor`, `salla → amber`, `brave → magenta`), validates against the allowed list, falls back to `prefers-color-scheme` for variant. No FOUC.
+- **Palette origins:** the eight "voice" palettes (ink, ember, rose, harbor, amber, magenta, paper, sepia) were distilled from `cv_*.html` mockups in `/home/abdullah/Documents/hdd/career-ops/`; five neutrals (slate, forest, cream, mono, midnight) were imported from the sibling `style-files/svelte-styles.css`. Names are evocative, never tied to a vendor. Only the colour values cross the boundary; no copy or markup. The site's spirit (warm canvas, generous rule lines, muted secondary text) is preserved across all palettes — only `--bg / --fg / --muted / --rule / --accent` rotate.
+- **About page** (`/p/about`): essay-first personal page (voice, not LinkedIn-export). Four-paragraph opener + contact block + "Download CV (PDF)" trigger. The trigger opens an inline disclosure dialog that lets the visitor pick any of the eight palettes + light/dark variant; clicking "Open print view" opens `/p/cv/print` in a new tab with the chosen options pre-applied.
+- **CV PDF generation** (`/p/cv/print`): chrome-free print route. On mount it sets `documentElement.dataset.theme` + `dataset.themeName` from URL params (`?palette=…&variant=…`, validated against the allowed set), adds `body.print-mode` to hide `ThemeToggle` / `MarginAside` / `BackToTop` / skip-link, then fires `window.print()` (suppressable with `&autoprint=0` for previews). User picks "Save as PDF" from the system dialog. CV content lives in `src/lib/cv-data.js` (`identity`, `summary`, `roles`, `projects`, `education`, `skills`, `spoken`, `PALETTES`) — single source for the print route and any future surface. PDF excludes the opening basmalah/hamd/salawat and closing Ayah/Ibrahimi salawat by design (CV is a secular work artifact). Print stylesheet: A4 with 14–16mm margins, `print-color-adjust: exact` so palette colors survive, `page-break-inside: avoid` per role, links printed in inherit color with no trailing-URL.
+- **`/p/cv` redirect:** kept as 308 (meta refresh + `location.href`) to `/p/about` so old backlinks resolve. The print route lives below it (`/p/cv/print`) because conceptually it's still the CV surface, just the printable variant.
+- **Prerender seeding:** `kit.prerender.entries = ['*', '/p/cv/print']` in `svelte.config.js` — the print route isn't linked from any static page (it's opened by JS from the about-page dialog), so the crawler needs an explicit seed.
+- **Text selection** (`::selection` / `::-moz-selection` in `app.css`): `background: var(--accent); color: var(--bg)` — selection highlight tracks the active palette in both light and dark.
 - **Slug guard:** SvelteKit `entries()` enumerates valid slugs at build; unknown slugs become 404 at prerender time.
 - **Quality bar:** desktop Lighthouse 100×4 every route. Mobile: 100 across A11y / BP / SEO; Performance ≥ 99 (single-bundle hydration on simulated Slow 4G dips FCP score to 0.98 — within "good" Core Web Vitals but rounded short of perfect). CI enforces.
 
@@ -44,7 +49,7 @@ prepend the base path (CSS string URLs aren't rewritten by Vite).
 - **Body + nav:** **Montserrat** (self-hosted woff2, weights 400 + 500 + 600, `latin` + `latin-ext` subsets, fetched on demand). Single Latin family throughout — no separate UI font.
 - **Quran:** **UthmanTN** for Arabic text + ornate ayah brackets ﴿ ﴾ (matches the look of the printed mushaf). **UthmanicHafs** layered on top via `var(--quran-ayah-num)` only inside `<span class="ayah-num">` — its GSUB auto-wraps bare Arabic-Indic digit sequences in the rosette glyph, so the closing ayah uses bare `١٨٠ ١٨١ ١٨٢` from Saffat 180–182, no explicit U+06DD prefix needed.
 - **Regular Arabic:** **Noto Naskh Arabic** (self-hosted), with Amiri / Scheherazade fallback.
-- `font-display: optional` on every web font — first paint uses fallback, web font swaps in only if it's ready within ~100 ms. Eliminates CLS entirely (verified 0.000 on every measured route).
+- `font-display: swap` on every web font — first paint uses the system fallback, web font replaces it whenever it arrives (no permanent fallback on cold cache). Montserrat 400/500/600 weights are `<link rel="preload">`'d to keep arrival inside the typical first-paint window. CLS stays at 0 across measured routes (verified Lighthouse).
 
 ## Sidenotes + TL;DR
 
@@ -99,6 +104,23 @@ Adding a new file = no restart; the next `bun run build` reads it.
   - **Iframe width/height attrs** to nail CLS to 0.
   - **`font-display: optional`** across web fonts — CLS = 0 verified.
 - [x] Lighthouse sweep verified: desktop 100×4 on every route. Mobile: 100 across A11y/BP/SEO; Performance 99–100 depending on payload. Trade-off documented (concept.txt).
+- [x] Iter 12 — palette picker + about page + selection theming + font-display fix:
+  - **Palette popover:** replaced the cycle-only palette button with a popover listbox (named swatches + check mark on active; Esc / click-outside close; `aria-haspopup="listbox"`, `aria-expanded`, `role="option"`).
+  - **`/p/cv` → `/p/about`:** voice-first essay opener replaces ATS-style summary. `/p/cv` becomes a 308 redirect (meta refresh + script) for backlink compatibility. Sitemap and `MarginAside` updated.
+  - **Selection styling:** `::selection` / `::-moz-selection` use `--accent` / `--bg` so highlight follows the active palette in both variants.
+  - **Font-display swap (cold-cache fix):** dropped `font-display: optional` (caused permanent fallback for cold-cache visitors). All web fonts now `swap`; Montserrat 500/600 added to preload alongside 400. CLS stays 0.
+- [x] Iter 13 — client-side themed CV PDF:
+  - **About page reshaped:** dropped the inline condensed-CV sections + sticky right-rail TOC. About is now essay + contact + a single "Download CV (PDF)" disclosure.
+  - **Download dialog:** palette via `PaletteDial`, variant via Light/Dark pills. Defaults seed from the visitor's current site theme. Esc / click-outside close.
+  - **`/p/cv/print` route:** chrome-free, themed via `?palette=…&variant=…`. Sets `documentElement.dataset.{theme,themeName}` on mount, adds `body.print-mode` to hide `ThemeToggle` / `MarginAside` / `BackToTop` / skip-link, calls `window.print()` after a settle tick (suppress with `&autoprint=0` for previews). A4 print stylesheet with 22mm top/bottom + 20mm side margins (comfortable reading), `print-color-adjust: exact`, `page-break-inside: avoid` per role.
+  - **CV data extracted** into `src/lib/cv-data.js`. Single source consumed by `/p/cv/print` today and ready for any future viewer.
+  - **Prerender seeded** with `kit.prerender.entries = ['*', '/p/cv/print']` (route isn't linked statically; opened by JS).
+- [x] Iter 14 — palette rename + radial picker + symmetric opening/closing + roomier print margins:
+  - **Palette names:** dropped vendor names. `windsor → ink`, `zapier → ember`, `clipboard → rose`, `enveritas → harbor`, `salla → amber`, `brave → magenta`. Added five palettes imported from `career-ops/style-files/svelte-styles.css`: `slate`, `forest`, `cream`, `mono`, `midnight`. Total = 13. Old `localStorage` values are silently migrated by the head-script.
+  - **Palette dial** (`PaletteDial.svelte`): shared component placing N dots on the circumference of an invisible circle (12 o'clock start, clockwise), with the active palette mirrored as a centre swatch + label. Selected state is an inset `var(--bg)` pip — no scale, no outer ring — so the dot stays glued to the radius. Hover dims siblings. Used by `ThemeToggle`'s popover + the about-page download dialog (single source of truth).
+  - **Palette order on dial:** hue walk — paper → sepia → cream → ember → amber → forest → slate → ink → harbor → midnight → magenta → rose → mono → back to paper. Adjacent dots are always perceptually close.
+  - **Opening / closing symmetry** (`Page.svelte`): bumped the opening basmalah/hamd font-size 1.45rem → 1.5rem and the opening salawat 0.95rem → 1rem so they match the closing Ayah (1.5rem) and Ibrahimi salawat (1rem) exactly. Page reads symmetric top-to-bottom.
+  - **Print margins:** `@page` for `/p/cv/print` from `14mm 14mm 16mm` → `22mm 20mm 22mm`. Inside-page sizes nudged up half a point for reading comfort.
 
 ## Open questions
 
@@ -106,6 +128,6 @@ Adding a new file = no restart; the next `bun run build` reads it.
 - Sidenote pin persistence across reloads — out of scope per concept; revisit if requested.
 - Multi-lingual mixing inline: extension or convention?
 - Page editor: separate admin route or inline WYSIWYG?
-- Real CV content (still a placeholder).
+- CV PDF: generated client-side from `/p/cv/print` via the native print dialog. No static `cv.pdf` artifact is needed; the source of truth lives in `src/lib/cv-data.js`.
 - Real deploy target.
 - Mobile Performance 100 (currently 99) — would require deferring Sidenotes/MarginAside/BackToTop hydration off the initial bundle. Possible if needed.

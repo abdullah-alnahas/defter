@@ -101,15 +101,19 @@
   }
   .opening p { margin: 0 0 0.4rem; }
   .opening p:last-child { margin-bottom: 0; }
+  /* Opening and closing blocks deliberately mirror each other in size so the
+     page feels symmetric: opening basmalah/hamd matches the closing Ayah
+     (both Quran-font at 1.5rem), opening salawat matches closing salawat
+     (regular Arabic at 1rem). */
   .opening .quran {
     font-family: var(--quran);
-    font-size: 1.45rem;
+    font-size: 1.5rem;
     line-height: 2.2;
   }
   .opening .salawat-open {
     margin-top: 0.8rem;
     color: var(--muted);
-    font-size: 0.95rem;
+    font-size: 1rem;
     line-height: 2;
   }
 

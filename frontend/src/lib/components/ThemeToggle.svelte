@@ -1,32 +1,62 @@
 <script>
   import { bus, pinAll, unpinAll } from '../sidenote-bus.svelte.js';
+  import { PALETTES } from '../cv-data.js';
+  import PaletteDial from './PaletteDial.svelte';
 
   let theme = $state('light');
   let themeName = $state('paper');
   let mounted = $state(false);
+  let paletteOpen = $state(false);
+  let popoverEl;
+  let paletteBtnEl;
 
-  const NAMES = ['paper', 'sepia', 'windsor', 'zapier', 'clipboard', 'enveritas', 'salla', 'brave'];
-  /* Swatch = the same colour the CSS exposes as --accent for each palette × variant.
-     Kept inline (not read from getComputedStyle) so the button reflects the
-     *next* palette in the cycle without forcing a paint round-trip. */
+  const NAMES = PALETTES.map((p) => p.id);
+  /* Per-variant accent colours. Kept inline so the trigger and the dial
+     reflect the right hue immediately without forcing a paint round-trip. */
   const SWATCH = {
-    paper:     { light: '#1E252D', dark: '#D6CFBB' },
-    sepia:     { light: '#6b3a12', dark: '#d6a86a' },
-    windsor:   { light: '#1e3a8a', dark: '#6ec7ff' },
-    zapier:    { light: '#ff4f00', dark: '#ff7a40' },
-    clipboard: { light: '#C12A58', dark: '#e84a78' },
-    enveritas: { light: '#002060', dark: '#6e8cff' },
-    salla:     { light: '#c08a18', dark: '#FFD21E' },
-    brave:     { light: '#d9156f', dark: '#ff1893' },
+    paper:    { light: '#1E252D',                  dark: '#D6CFBB' },
+    sepia:    { light: '#6b3a12',                  dark: '#d6a86a' },
+    ink:      { light: '#1e3a8a',                  dark: '#6ec7ff' },
+    ember:    { light: '#ff4f00',                  dark: '#ff7a40' },
+    rose:     { light: '#C12A58',                  dark: '#e84a78' },
+    harbor:   { light: '#002060',                  dark: '#6e8cff' },
+    amber:    { light: '#c08a18',                  dark: '#FFD21E' },
+    magenta:  { light: '#d9156f',                  dark: '#ff1893' },
+    slate:    { light: 'oklch(0.55 0.16 250)',     dark: 'oklch(0.78 0.13 250)' },
+    forest:   { light: 'oklch(0.50 0.13 150)',     dark: 'oklch(0.78 0.13 150)' },
+    cream:    { light: 'oklch(0.58 0.16 35)',      dark: 'oklch(0.78 0.13 35)'  },
+    mono:     { light: 'oklch(0.30 0 0)',          dark: 'oklch(0.92 0 0)'      },
+    midnight: { light: 'oklch(0.55 0.18 290)',     dark: 'oklch(0.82 0.14 290)' },
   };
-  const nextPaletteName = $derived(NAMES[(NAMES.indexOf(themeName) + 1) % NAMES.length]);
   const currentSwatch = $derived(SWATCH[themeName]?.[theme] ?? '#888');
+  const currentLabel  = $derived(PALETTES.find((p) => p.id === themeName)?.label ?? 'Paper');
 
   $effect(() => {
     const root = document.documentElement;
     theme = root.dataset.theme === 'dark' ? 'dark' : 'light';
     themeName = NAMES.includes(root.dataset.themeName) ? root.dataset.themeName : 'paper';
     mounted = true;
+  });
+
+  $effect(() => {
+    if (!paletteOpen) return;
+    function onDocClick(e) {
+      if (popoverEl?.contains(e.target)) return;
+      if (paletteBtnEl?.contains(e.target)) return;
+      paletteOpen = false;
+    }
+    function onKey(e) {
+      if (e.key === 'Escape') {
+        paletteOpen = false;
+        paletteBtnEl?.focus();
+      }
+    }
+    document.addEventListener('mousedown', onDocClick);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDocClick);
+      document.removeEventListener('keydown', onKey);
+    };
   });
 
   function toggleVariant() {
@@ -36,12 +66,12 @@
     theme = next;
   }
 
-  function cyclePalette() {
-    const idx = NAMES.indexOf(themeName);
-    const next = NAMES[(idx + 1) % NAMES.length];
-    document.documentElement.dataset.themeName = next;
-    try { localStorage.setItem('defter-theme-name', next); } catch {}
-    themeName = next;
+  function selectPalette(id) {
+    document.documentElement.dataset.themeName = id;
+    try { localStorage.setItem('defter-theme-name', id); } catch {}
+    themeName = id;
+    /* Keep the dial open so the user can keep dialling — the centre
+       updates in place, which is the whole point of the radial picker. */
   }
 
   function togglePin() {
@@ -67,15 +97,40 @@
         </svg>
       </button>
     {/if}
-    <button
-      type="button"
-      class="theme-btn palette"
-      aria-label={`Palette: ${themeName}. Click for ${nextPaletteName}.`}
-      title={`Palette: ${themeName} → ${nextPaletteName}`}
-      onclick={cyclePalette}
-    >
-      <span class="swatch" style="background:{currentSwatch}" aria-hidden="true"></span>
-    </button>
+
+    <div class="palette-wrap">
+      <button
+        type="button"
+        class="theme-btn palette"
+        bind:this={paletteBtnEl}
+        aria-haspopup="dialog"
+        aria-expanded={paletteOpen}
+        aria-label={`Palette: ${currentLabel}. Open palette picker.`}
+        title={`Palette: ${currentLabel}`}
+        onclick={() => paletteOpen = !paletteOpen}
+      >
+        <span class="swatch" style="background:{currentSwatch}" aria-hidden="true"></span>
+      </button>
+
+      {#if paletteOpen}
+        <div
+          class="palette-popover"
+          role="dialog"
+          aria-label="Choose palette"
+          tabindex="-1"
+          bind:this={popoverEl}
+        >
+          <PaletteDial
+            palettes={PALETTES}
+            value={themeName}
+            variant={theme}
+            swatchMap={SWATCH}
+            onSelect={selectPalette}
+          />
+        </div>
+      {/if}
+    </div>
+
     <button
       type="button"
       class="theme-btn variant"
@@ -126,7 +181,8 @@
   .theme-bar:hover .theme-btn,
   .theme-btn:hover,
   .theme-btn:focus-visible,
-  .theme-btn.is-on {
+  .theme-btn.is-on,
+  .theme-btn[aria-expanded="true"] {
     color: var(--fg);
     border-color: var(--rule);
     background: var(--bg);
@@ -142,9 +198,30 @@
     height: 0.9rem;
     border-radius: 50%;
     box-shadow: inset 0 0 0 1px rgba(0,0,0,0.18);
+    flex: 0 0 auto;
+  }
+
+  .palette-wrap { position: relative; display: inline-flex; }
+
+  .palette-popover {
+    position: absolute;
+    top: calc(100% + 0.55rem);
+    inset-inline-end: 0;
+    padding: 0.7rem;
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: 0.85rem;
+    box-shadow: 0 10px 28px -10px rgba(0,0,0,0.22), 0 3px 8px -3px rgba(0,0,0,0.10);
+    z-index: 11;
+    animation: pop-in 140ms ease-out;
+  }
+  @keyframes pop-in {
+    from { opacity: 0; transform: translateY(-3px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   @media (prefers-reduced-motion: reduce) {
     .theme-btn { transition: none; }
+    .palette-popover { animation: none; }
   }
 </style>
