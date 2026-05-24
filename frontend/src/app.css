@@ -267,9 +267,11 @@
   color-scheme: dark;
 }
 
-/* External link arrow on hover. Body content + nav alike. */
-a[target='_blank']:hover::after,
-a[target='_blank']:focus-visible::after {
+/* External link arrow — always rendered so it reserves space, fades in on
+   hover/focus. Earlier this was injected only on :hover via ::after, which
+   reflowed the link width and nudged adjacent text on hover; reserving the
+   glyph at opacity:0 keeps the layout stable. */
+a[target='_blank']::after {
   content: ' \2197';
   display: inline-block;
   margin-inline-start: 0.15em;
@@ -277,6 +279,13 @@ a[target='_blank']:focus-visible::after {
   line-height: 0;
   vertical-align: super;
   text-decoration: none;
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+a[target='_blank']:hover::after,
+a[target='_blank']:focus-visible::after { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  a[target='_blank']::after { transition: none; }
 }
 
 html, body {
