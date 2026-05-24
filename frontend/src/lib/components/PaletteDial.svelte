@@ -132,35 +132,28 @@
     margin: 0 auto;
   }
 
-  /* Arm pivots around its left edge (the centre of the stage). The line
-     itself is painted only between the outer edge of the centre swatch
-     and the inner edge of the chosen dot — so it visually connects the
-     two nearest borders rather than running straight through both circles.
-     Painting is done with a multi-stop gradient on the arm element so the
-     rotation origin can stay at the stage centre regardless. */
+  /* Arm pivots at the centre of the stage and is sized to span exactly
+     from the outer edge of the centre swatch to the inner edge of the
+     chosen dot — so it visually connects the two nearest border points
+     and nothing more. The element itself is the line; no gradient
+     masking, so the endpoints are pixel-exact. */
   .dial-arm {
-    --arm-end: calc(var(--radius) - var(--dot) / 2 - 1px);
     --arm-w: 2.5px;
+    --arm-len: calc(var(--radius) - var(--center-r) - var(--dot) / 2);
 
     position: absolute;
     top: 50%;
-    left: 50%;
-    width: var(--radius);
+    left: calc(50% + var(--center-r));
+    width: var(--arm-len);
     height: var(--arm-w);
     margin-top: calc(var(--arm-w) / -2);
-    background: linear-gradient(
-      to right,
-      transparent 0,
-      transparent calc(var(--center-r) + 1px),
-      currentColor calc(var(--center-r) + 1px),
-      currentColor var(--arm-end),
-      transparent var(--arm-end),
-      transparent 100%
-    );
-    color: var(--fg);
+    background: var(--fg);
     opacity: 0.55;
     border-radius: calc(var(--arm-w) / 2);
-    transform-origin: 0 50%;
+    /* Pivot around the stage centre, which is offset (-center-r) from
+       this element's own left edge. Rotating about that point keeps the
+       arm always radiating from the centre swatch's edge. */
+    transform-origin: calc(-1 * var(--center-r)) 50%;
     pointer-events: none;
     z-index: 0;
     transition: transform 280ms cubic-bezier(.2,.7,.2,1);
