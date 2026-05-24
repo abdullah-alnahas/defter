@@ -213,8 +213,6 @@
     margin: 0 0 1rem;
     padding-bottom: 0.7rem;
     border-bottom: 1px solid var(--rule);
-    page-break-inside: avoid;
-    break-inside: avoid;
   }
   .role:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
   .role-head {

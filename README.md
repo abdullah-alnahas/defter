@@ -16,19 +16,27 @@ and `SITE_ORIGIN` in the workflow `env` block.
 ## Themes
 
 The palette button in the top-end toggle bar opens a popover containing a
-**radial dial** (`PaletteDial.svelte`): 13 named palettes arranged as dots
+**radial dial** (`PaletteDial.svelte`): 14 named palettes arranged as dots
 on the circumference of an invisible circle, walking clockwise from 12
-o'clock through a hue-ordered sequence — `paper` → `sepia` → `cream` →
-`ember` → `amber` → `forest` → `slate` → `ink` → `harbor` → `midnight` →
-`magenta` → `rose` → `mono`. The active palette is mirrored as a swatch +
-label at the centre of the dial; on the chosen dot it shows as an inset
-pip so the dot stays glued to the circle. Eight palettes are distilled
-from `cv_*.html` mockups in `/home/abdullah/Documents/hdd/career-ops/`;
-five (slate, forest, cream, mono, midnight) are imported from
+o'clock through a hue-ordered sequence — `paper` → `sepia` → `copper`
+(default) → `cream` → `ember` → `amber` → `forest` → `slate` → `ink` →
+`harbor` → `midnight` → `magenta` → `rose` → `mono`. The active palette is
+mirrored as a swatch + label at the centre of the dial; on the chosen dot
+it shows as an inset pip so the dot stays glued to the circle. (A
+connector arm from the centre to the active dot is implemented but
+disabled for now — the geometry isn't reliably border-to-border at every
+angle yet.) `copper` is mirrored after the pg-reader Chrome extension's
+"Slate & Amber" palette (warm paper `#F3F2EC` + slate ink `#1E252D` +
+copper accent `#B26A2B`; dark: navy `#181D26` + cream `#D6CFBB` + copper
+`#D89A5E`). Base body font-size is 19px across all palettes for a uniform
+reading rhythm. Eight palettes are distilled from `cv_*.html` mockups in
+`/home/abdullah/Documents/hdd/career-ops/`; five (slate, forest, cream,
+mono, midnight) are imported from
 `career-ops/style-files/svelte-styles.css`. Each palette redefines `--bg`,
 `--fg`, `--muted`, `--rule`, `--accent` for both light and dark variants;
-layout, type, and spacing don't change. Text selection (`::selection`)
-reads `--accent` / `--bg` so the highlight follows the current palette.
+layout and spacing don't change across palettes.
+Text selection (`::selection`) reads `--accent` / `--bg` so the highlight
+follows the current palette.
 
 ## Stack
 
@@ -52,7 +60,7 @@ frontend/
         Page.svelte                       mandatory wrapper (basmalah/hamd with Quran font + diacritics, title row with TLDR trigger, body, closing Ayah + Ibrahimi salawat). Symmetric 3-col grid (margin/body/margin).
         ThemeToggle.svelte                icon bar at top-end: pin-all (when sidenotes exist) + palette popover (radial PaletteDial) + sun/moon variant
         PaletteDial.svelte                shared radial palette picker (N dots on invisible circle; active = centre swatch + inset pip)
-        MarginAside.svelte                persistent left-margin nav (fixed top-start)
+        MarginAside.svelte                top navbar (in-flow, NOT sticky — scrolls away with the page); file kept under legacy name
         BackToTop.svelte                  fixed bottom-end, dim arrow + always-visible "Back to top" label
         Sidenotes.svelte                  per-page mount: scans refs, creates margin slots, binds hover/click/pin
     routes/

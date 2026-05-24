@@ -142,6 +142,7 @@ export const spoken = ['Arabic (Native)', 'English (Fluent)', 'Turkish (Fluent)'
 export const PALETTES = [
   { id: 'paper',    label: 'Paper',    swatch: '#1E252D'                  },
   { id: 'sepia',    label: 'Sepia',    swatch: '#6b3a12'                  },
+  { id: 'copper',   label: 'Copper',   swatch: '#B26A2B'                  },
   { id: 'cream',    label: 'Cream',    swatch: 'oklch(0.58 0.16 35)'      },
   { id: 'ember',    label: 'Ember',    swatch: '#ff4f00'                  },
   { id: 'amber',    label: 'Amber',    swatch: '#c08a18'                  },

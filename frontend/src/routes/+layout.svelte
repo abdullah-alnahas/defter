@@ -8,10 +8,11 @@
 
 <a class="skip" href="#main-content">Skip to content</a>
 
+<MarginAside />
+
 {@render children?.()}
 
 <ThemeToggle />
-<MarginAside />
 <BackToTop />
 
 <style>

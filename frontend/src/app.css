@@ -19,8 +19,33 @@
    in career-ops/style-files/svelte-styles.css. The site's "spirit" (warm
    paper, generous rule lines, muted secondary text) is preserved — only the
    colour values rotate. */
+
+/* Copper — warm paper + slate ink + copper accent, mirrored after the
+   pg-reader Chrome extension's "Slate & Amber" palette. Site default:
+   longform reading is the primary use case, and the copper accent doubles
+   as link colour, drop cap, and rule. Bare :root carries the same values
+   so first paint matches even before the init script sets data-theme-name. */
 :root,
 :root[data-theme='light'],
+:root[data-theme-name='copper'],
+:root[data-theme-name='copper'][data-theme='light'] {
+  --bg: #F3F2EC;
+  --fg: #1E252D;
+  --muted: #6A7380;
+  --rule: #DDD9CE;
+  --accent: #B26A2B;
+}
+:root[data-theme='dark'],
+:root[data-theme-name='copper'][data-theme='dark'] {
+  --bg: #181D26;
+  --fg: #D6CFBB;
+  --muted: #868C97;
+  --rule: #2B323E;
+  --accent: #D89A5E;
+  color-scheme: dark;
+}
+
+/* Paper — warm cream + slate ink, mono accent. The original default. */
 :root[data-theme-name='paper'],
 :root[data-theme-name='paper'][data-theme='light'] {
   --bg: #FAF8F2;
@@ -29,7 +54,6 @@
   --rule: #e3ddcd;
   --accent: #1E252D;
 }
-:root[data-theme='dark'],
 :root[data-theme-name='paper'][data-theme='dark'] {
   --bg: #1F2530;
   --fg: #D6CFBB;
@@ -261,7 +285,7 @@ html, body {
   background: var(--bg);
   color: var(--fg);
   font-family: var(--body);
-  font-size: 17px;
+  font-size: 19px;
   line-height: 1.7;
 }
 

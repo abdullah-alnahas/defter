@@ -14,6 +14,7 @@
   /* Per-variant accent colours. Kept inline so the trigger and the dial
      reflect the right hue immediately without forcing a paint round-trip. */
   const SWATCH = {
+    copper:   { light: '#B26A2B',                  dark: '#D89A5E' },
     paper:    { light: '#1E252D',                  dark: '#D6CFBB' },
     sepia:    { light: '#6b3a12',                  dark: '#d6a86a' },
     ink:      { light: '#1e3a8a',                  dark: '#6ec7ff' },
@@ -29,12 +30,12 @@
     midnight: { light: 'oklch(0.55 0.18 290)',     dark: 'oklch(0.82 0.14 290)' },
   };
   const currentSwatch = $derived(SWATCH[themeName]?.[theme] ?? '#888');
-  const currentLabel  = $derived(PALETTES.find((p) => p.id === themeName)?.label ?? 'Paper');
+  const currentLabel  = $derived(PALETTES.find((p) => p.id === themeName)?.label ?? 'Copper');
 
   $effect(() => {
     const root = document.documentElement;
     theme = root.dataset.theme === 'dark' ? 'dark' : 'light';
-    themeName = NAMES.includes(root.dataset.themeName) ? root.dataset.themeName : 'paper';
+    themeName = NAMES.includes(root.dataset.themeName) ? root.dataset.themeName : 'copper';
     mounted = true;
   });
 
@@ -109,7 +110,13 @@
         title={`Palette: ${currentLabel}`}
         onclick={() => paletteOpen = !paletteOpen}
       >
-        <span class="swatch" style="background:{currentSwatch}" aria-hidden="true"></span>
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.93 0 1.65-.75 1.65-1.69 0-.44-.18-.83-.44-1.12-.29-.29-.44-.65-.44-1.13a1.64 1.64 0 0 1 1.67-1.66h1.99c3.05 0 5.56-2.5 5.56-5.55C21.97 6.01 17.46 2 12 2z" />
+          <circle cx="8.5" cy="7.5" r="1" fill="currentColor" stroke="none" />
+          <circle cx="6.5" cy="12.5" r="1" fill="currentColor" stroke="none" />
+          <circle cx="13.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+          <circle cx="17.5" cy="10.5" r="1.3" style="fill:{currentSwatch}" stroke="none" />
+        </svg>
       </button>
 
       {#if paletteOpen}
@@ -190,15 +197,6 @@
   .theme-btn:focus-visible {
     outline: 2px solid var(--fg);
     outline-offset: 2px;
-  }
-
-  .swatch {
-    display: block;
-    width: 0.9rem;
-    height: 0.9rem;
-    border-radius: 50%;
-    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.18);
-    flex: 0 0 auto;
   }
 
   .palette-wrap { position: relative; display: inline-flex; }

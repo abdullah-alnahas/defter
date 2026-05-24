@@ -8,8 +8,8 @@
 Blog view: Picked (featured) + All (full list). No separate "Recent" section — recency is implicit in the All ordering.
 
 ## Navigation
-- Persistent left-margin aside (always visible). Links: Blog, Featured, About, GitHub, LinkedIn, RSS.
-- No top navbar. The aside is the only nav surface.
+- Top navbar — explicitly NOT sticky. Sits at the top of every page in normal flow and scrolls away with the article so the reading column is uncluttered while reading. Links: Blog, Featured, About, GitHub, LinkedIn, RSS.
+- The theme bar (pin-all + palette + variant) stays fixed top-end so palette / variant flips remain one click away while reading.
 - Skip-link at top for keyboard users.
 
 ## Page concept
@@ -31,7 +31,7 @@ For any page I create in the website editor:
 - Arbitrary JS code in a block — for example, to demo an idea inline. (Maybe call it an "executed code block" rather than just "code block"? Sounds a bit mouthy though.)
 - Several themes, each with a dark and a light variant.
 - Extremely minimal looking but rich. Examples:
-  - No top navbar — nav lives quietly in the left margin, always visible but dim.
+  - Nav lives in a non-sticky top bar — present at the top of the page, scrolls away while reading so the column has no permanent chrome.
   - Each published page has a TL;DR trigger styled as a subtle button next to the title — dim by default, brightens on hover, clicks pin a TL;DR margin note like a sidenote.
   - Plenty of negative space.
   - Best UI/UX practices.
@@ -67,9 +67,9 @@ Interactive margin notes that live invisibly in the right margin column and reve
 - **Regular Arabic:** Noto Naskh Arabic (self-hosted), fallback Amiri / Scheherazade New.
 
 ## Layout
-- Symmetric 3-column grid: equal-width margin / body (capped at `--measure`) / equal-width margin. Body is centred. Sidenotes live in the right margin column.
-- Nav aside: fixed top-start (left).
-- Theme bar (pin-all + palette + variant): fixed top-end (right). The palette button opens a popover containing a **radial dial** — dots on the circumference of an invisible circle (paper at the top, walking clockwise through a hue-ordered sequence: sepia → cream → ember → amber → forest → slate → ink → harbor → midnight → magenta → rose → mono). The active palette is mirrored as a centre swatch + label; on its own dot it shows as an inset pip so the dot stays glued to the radius. Selecting a palette switches in place; no blind cycling required.
+- Symmetric 3-column grid: equal-width margin / body (capped at `--measure`) / equal-width margin. Body is centred. Sidenotes live in the right margin column. Left margin column stays as visual balance even though nav no longer lives there.
+- Top navbar: in normal flow above the grid, NOT sticky.
+- Theme bar (pin-all + palette + variant): fixed top-end (right). The palette button (lucide-style palette icon, with one inner dot tinted by the active accent) opens a popover containing a **radial dial** — dots on the circumference of an invisible circle, walking clockwise from 12 o'clock through a hue-ordered sequence: paper → sepia → copper → cream → ember → amber → forest → slate → ink → harbor → midnight → magenta → rose → mono. The active palette is mirrored as a centre swatch + label; on its own dot it shows as an inset pip so the dot stays glued to the radius. (A connector arm from the centre to the active dot is implemented but currently disabled — re-enable once the geometry lands border-to-border cleanly at every angle.) Selecting a palette switches in place; no blind cycling required. The `copper` palette (warm paper + slate ink + copper accent, mirrored after the pg-reader Chrome extension's "Slate & Amber") is the site default. Base body font-size is 19px across **every** palette so layout never changes — only `--bg / --fg / --muted / --rule / --accent` rotate.
 - Back-to-top button: fixed bottom-end. Always visible — arrow + "Back to top" label.
 - Text selection (`::selection`) reads `--accent` / `--bg` so the highlight tracks the active palette.
 

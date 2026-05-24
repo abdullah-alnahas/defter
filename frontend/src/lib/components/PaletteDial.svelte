@@ -85,7 +85,10 @@
   class="dial-stage"
   style="--radius:{radius}px; --dot:{dot}px;"
 >
-  {#if armAngle !== null}
+  <!-- Dial arm temporarily disabled — geometry still reads off at some
+       angles. May re-enable once the connector lands border-to-border
+       cleanly at every rotation. -->
+  {#if false && armAngle !== null}
     <div
       class="dial-arm"
       style="transform: rotate({armAngle}deg);"
@@ -122,9 +125,14 @@
 
 <style>
   .dial-stage {
-    /* Half-width of the centre swatch — used to start the arm at the edge
-       of the centre and end it at the inside of the active dot. */
-    --center-r: 1.2rem;
+    /* Half-width of the centre swatch. Px (not rem) so the arm geometry
+       stays integer-aligned with --radius and --dot — mixing units left a
+       fractional gap at the dot end. */
+    --center-r: 19px;
+    /* Arm tucks this far INSIDE each circle on both ends so the rounded
+       caps disappear under the swatch / dot edges. Without the overlap
+       the line and the curve meet tangentially, leaving a sliver. */
+    --arm-overlap: 1.5px;
 
     position: relative;
     width: calc(2 * var(--radius) + var(--dot) + 1.4rem);
@@ -132,28 +140,25 @@
     margin: 0 auto;
   }
 
-  /* Arm pivots at the centre of the stage and is sized to span exactly
-     from the outer edge of the centre swatch to the inner edge of the
-     chosen dot — so it visually connects the two nearest border points
-     and nothing more. The element itself is the line; no gradient
-     masking, so the endpoints are pixel-exact. */
+  /* Arm pivots at the stage centre. Box spans from `center-r - overlap`
+     to `radius - dot/2 + overlap`, so the rounded ends are hidden under
+     the centre swatch and the dot — the visible line touches each border
+     pixel-exactly. */
   .dial-arm {
     --arm-w: 2.5px;
-    --arm-len: calc(var(--radius) - var(--center-r) - var(--dot) / 2);
+    --arm-inset: calc(var(--center-r) - var(--arm-overlap));
+    --arm-len: calc(var(--radius) - var(--center-r) - var(--dot) / 2 + 2 * var(--arm-overlap));
 
     position: absolute;
     top: 50%;
-    left: calc(50% + var(--center-r));
+    left: calc(50% + var(--arm-inset));
     width: var(--arm-len);
     height: var(--arm-w);
     margin-top: calc(var(--arm-w) / -2);
     background: var(--fg);
     opacity: 0.55;
     border-radius: calc(var(--arm-w) / 2);
-    /* Pivot around the stage centre, which is offset (-center-r) from
-       this element's own left edge. Rotating about that point keeps the
-       arm always radiating from the centre swatch's edge. */
-    transform-origin: calc(-1 * var(--center-r)) 50%;
+    transform-origin: calc(-1 * var(--arm-inset)) 50%;
     pointer-events: none;
     z-index: 0;
     transition: transform 280ms cubic-bezier(.2,.7,.2,1);

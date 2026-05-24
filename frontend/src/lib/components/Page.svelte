@@ -73,7 +73,7 @@
     column-gap: 2rem;
     justify-content: center;
     align-items: start;
-    padding: 4rem 1rem;
+    padding: 2.5rem 1rem 4rem;
   }
   .page-frame > article { grid-column: 2; min-width: 0; }
   .page-frame > :global(.sn-margin-col) { grid-column: 3; min-width: 0; }
@@ -82,7 +82,7 @@
     .page-frame {
       grid-template-columns: minmax(0, 1fr);
       column-gap: 0;
-      padding: 3rem 1.25rem;
+      padding: 2rem 1.25rem 3rem;
     }
     .page-frame > article { grid-column: 1; }
     .page-frame > :global(.sn-margin-col) { grid-column: 1; margin-top: 2rem; }

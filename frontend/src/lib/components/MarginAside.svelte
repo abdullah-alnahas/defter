@@ -1,6 +1,11 @@
 <script>
   /**
-   * Left-margin aside — primary nav links.
+   * Top navigation bar — primary site links.
+   * NOT sticky: scrolls away with the page so reading isn't crowded by chrome
+   * (theme toggle stays fixed for quick palette / variant flips). Earlier
+   * this was a fixed left-margin aside; the page now uses a top bar instead,
+   * matching the pg-reader reading layout where the navigation sits above the
+   * article and the page itself is the focal point.
    * (Pin/Unpin-all sidenote toggle lives in ThemeToggle bar.)
    */
   import { base } from '$app/paths';
@@ -14,7 +19,7 @@
   ];
 </script>
 
-<aside class="margin-aside" aria-label="Site navigation">
+<nav class="top-nav" aria-label="Site navigation">
   <ul>
     {#each links as l (l.href)}
       <li>
@@ -27,18 +32,16 @@
       </li>
     {/each}
   </ul>
-</aside>
+</nav>
 
 <style>
-  .margin-aside {
-    position: fixed;
-    top: 4rem;
-    inset-inline-start: 1.25rem;
-    width: 9rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.85rem;
-    z-index: 9;
+  .top-nav {
+    /* In-flow at the top of the page — explicitly NOT sticky. Right padding
+       leaves room for the fixed theme-bar (top:1rem, right:1rem) so the
+       last nav link never tucks beneath the palette button. */
+    padding: 1rem 7rem 1.25rem 1.25rem;
+    border-bottom: 1px solid var(--rule);
+    background: var(--bg);
   }
 
   ul {
@@ -46,10 +49,14 @@
     margin: 0;
     padding: 0;
     display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1.1rem;
     font-size: 0.82rem;
-    text-align: start;
+    /* Match the rest of the site UI — pre-fix this was Space Grotesk via an
+       override that wasn't loaded. Inherit from body so nav, theme toggle,
+       and article chrome read as one family. */
+    font-family: inherit;
   }
   li { margin: 0; }
   a {
@@ -70,12 +77,12 @@
     border-bottom-color: transparent;
   }
 
-  /* Hide aside on very narrow viewports — nav is still reachable via the inline page list links. */
-  @media (max-width: 56rem) {
-    .margin-aside { display: none; }
+  @media (max-width: 40rem) {
+    .top-nav { padding: 0.85rem 1rem 0.6rem; }
+    ul { gap: 0.85rem; font-size: 0.78rem; }
   }
 
   @media print {
-    .margin-aside { display: none; }
+    .top-nav { display: none; }
   }
 </style>
