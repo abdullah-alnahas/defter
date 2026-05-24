@@ -1,8 +1,8 @@
 /* @font-face declarations moved to app.html so they can use %sveltekit.assets%
    for correct base-path resolution under GitHub Pages. */
 :root {
-  --measure: 34rem;
-  --margin-col: 13rem;
+  --measure: 44rem;
+  --margin-col: 9rem;
   /* Body / UI font — Montserrat (user preference); generic sans-serif fallbacks for FOUT. */
   --body: 'Montserrat', system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
   --arabic: 'Noto Naskh Arabic', 'Amiri', 'Scheherazade New', serif;
