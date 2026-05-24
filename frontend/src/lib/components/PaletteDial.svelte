@@ -41,12 +41,29 @@
     });
   });
 
-  /* Angle of the active palette in degrees — used to rotate the arm that
-     links the centre swatch to the chosen dot. */
-  const activeAngle = $derived.by(() => {
+  /* Target angle of the active palette in degrees. We accumulate this into
+     `armAngle` so the arm always rotates by the shortest signed delta —
+     without that, going from mono (i = last) back to paper (i = 0) would
+     animate almost a full revolution instead of one step backwards. */
+  const targetAngle = $derived.by(() => {
     const i = palettes.findIndex((p) => p.id === value);
     if (i < 0) return null;
     return -90 + (360 / palettes.length) * i;
+  });
+
+  let armAngle = $state(null);
+  $effect(() => {
+    const t = targetAngle;
+    if (t === null) return;
+    if (armAngle === null) {
+      armAngle = t;
+      return;
+    }
+    /* Normalise (t - current) to the [-180, 180] interval, then add the
+       delta to the *cumulative* rotation. The CSS transform will animate
+       the short way round every time. */
+    const delta = ((t - armAngle) % 360 + 540) % 360 - 180;
+    armAngle = armAngle + delta;
   });
 
   function swatchFor(id) {
@@ -68,10 +85,10 @@
   class="dial-stage"
   style="--radius:{radius}px; --dot:{dot}px;"
 >
-  {#if activeAngle !== null}
+  {#if armAngle !== null}
     <div
       class="dial-arm"
-      style="transform: rotate({activeAngle}deg);"
+      style="transform: rotate({armAngle}deg);"
       aria-hidden="true"
     ></div>
   {/if}
