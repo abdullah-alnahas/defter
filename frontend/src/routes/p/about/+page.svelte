@@ -100,22 +100,23 @@
       English text at scale.
     </p>
     <p>
-      For the last seven years I've worked on the unglamorous parts of applied
-      AI: data pipelines that don't lose records, deduplication that survives
-      messy real-world input, ranking systems that hold up under load, and LLM
-      pipelines that don't quietly hallucinate. Most recently I've been
-      building a multi-stage POI cleansing and enrichment pipeline at Hudhud
-      Maps, processing 70K+ records per city across Saudi Arabia. Before that:
-      semantic search and catalog enrichment at Klevu, an LLM-assisted support
-      pipeline at SAP, humanitarian NLP at Data Friendly Space, and a forum
-      recommender at DonanimHaber.
+      For the last seven years I've worked on the practical parts of applied
+      AI: data pipelines, deduplication on messy real-world input, ranking and
+      recommender systems, and LLM-assisted workflows wired into real
+      products. Most recently I built a multi-stage POI cleansing and
+      enrichment pipeline at Hudhud Maps, processing 70K+ records per city
+      across Saudi Arabian cities. Before that: semantic search and catalog
+      enrichment at Klevu, an LLM-assisted support-ticket pipeline at SAP,
+      humanitarian NLP at Data Friendly Space, and a forum recommender at
+      DonanimHaber.
     </p>
     <p>
-      Outside paid work I'm a core contributor to
+      Outside paid work I previously contributed to
       <a href="https://ansari.chat" rel="noopener noreferrer external" target="_blank">Ansari</a>,
       an open-source Islamic AI assistant — I built its A/B prompt-comparison
-      tooling, CI, and Mawsuah knowledge integration. I also placed top-5 in
-      the Topcoder RAG Challenge.
+      Gradio app, set up its CI pipeline, integrated the Mawsuah knowledge
+      source, and improved its auth (refresh tokens with rotation). I also
+      placed top-5 in the Topcoder RAG Challenge.
     </p>
     <p>
       Based in Istanbul (GMT+3), comfortable across distributed teams in EMEA,
